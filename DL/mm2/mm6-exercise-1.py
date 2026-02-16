@@ -38,7 +38,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
 
         # Zero out gradients
-        # your code here...
+        optimizer.zero_grad()
 
         # Forward data
         output = model(data)
@@ -47,10 +47,10 @@ def train(args, model, device, train_loader, optimizer, epoch):
         loss = F.nll_loss(output, target)
 
         # Backprop
-        # your code here...
+        loss.backward()
 
         # Update weights
-        # your code here...
+        optimizer.step()
 
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
