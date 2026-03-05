@@ -1,5 +1,8 @@
 #include <Arduino.h>
 #include <Arduino_LSM6DS3.h>
+#include <BasicLinearAlgebra.h>
+
+using namespace BLA;
 
 /*
   Arduino LSM6DS3 - Simple Accelerometer
@@ -22,6 +25,7 @@
    We can then add additional functionality to the new class. In this case, we add four functions to
    add the ability to change the sampling rate for the gyro and accelerometer.
 */
+
 class IMUExtended : public LSM6DS3Class
 {
 public:
@@ -54,7 +58,31 @@ public:
 // Instantiate the new class instead of the old class.
 IMUExtended myIMU{Wire, LSM6DS3_ADDRESS};
 
+float phi = 0;
+float T_s = 1 / 13;
+float a = 0;
+float b = 0;
+float v = 0;
+float p = 0;
+float w_a = 0;
+float w_b = 0;
+float std_qa = 0;
+float std_qb = 0;
+float var_v = 0;
+
 uint32_t Time{0};
+
+Matrix<4, 4> PHI = {phi, 0, 0, 0, T_s, 1, 0, 0, 0, T_s, 1, 0, 0, 0, 0, 1};
+Matrix<4, 4> Q = {std_qa * std_qa, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, std_qb *std_qb};
+Matrix<1, 4> x = {a, v, p, b};
+Matrix<1, 1> R = {var_v};
+Eye<4, 4> P;
+
+void kalman(Matrix<4, 4> state_estimate)
+{
+  Matrix<4, 4> predicted_state = PHI * state_estimate;
+  Matrix<4, 4> predicted_p = PHI * P * ~PHI + Q;
+}
 
 void setup()
 {
@@ -85,6 +113,7 @@ void loop()
   // myIMU.gyroscopeSampleRate();    // Note that this function does not return the rate, but just always 104 Hz
   // myIMU.accelerationSampleRate(); // Note that this function does not return the rate, but just always 104 Hz
 
+  /*
   if (myIMU.accelerationAvailable())
   {
     Serial.print("Time: ");
@@ -98,5 +127,9 @@ void loop()
     Serial.print(y);
     Serial.print('\t');
     Serial.println(z);
-  }
+  }*/
+
+  Matrix<1, 4> measurement = {a, v, a, b};
+  Eye<4, 4> state_estimate;
+  kalman(state_estimate);
 }
