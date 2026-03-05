@@ -129,7 +129,7 @@ void loop()
     Serial.println(z);
   }*/
 
-  Matrix<1, 4> measurement = {0}; // FIXME
+  Matrix<1, 4> measurement = {0}; // FIXME This is raw measurement
   Eye<4, 4> state_estimate;
   kalman(state_estimate);
 }
