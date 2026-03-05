@@ -63,25 +63,29 @@ float T_s = 1 / 13;
 float a = 0;
 float b = 0;
 float v = 0;
+float v_noise = 0;
 float p = 0;
 float w_a = 0;
 float w_b = 0;
 float std_qa = 0;
 float std_qb = 0;
-float var_v = 0;
+float std_v = 0;
 
 uint32_t Time{0};
 
 Matrix<4, 4> PHI = {phi, 0, 0, 0, T_s, 1, 0, 0, 0, T_s, 1, 0, 0, 0, 0, 1};
 Matrix<4, 4> Q = {std_qa * std_qa, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, std_qb *std_qb};
 Matrix<1, 4> x = {a, v, p, b};
-Matrix<1, 1> R = {var_v};
+Matrix<1, 1> R = {std_v};
+Matrix<1, 4> H = {0, 0, 1, 1};
 Eye<4, 4> P;
 
 void kalman(Matrix<4, 4> state_estimate)
 {
   Matrix<4, 4> predicted_state = PHI * state_estimate;
   Matrix<4, 4> predicted_p = PHI * P * ~PHI + Q;
+
+  Matrix<1, 4> z = H * state_estimate + std_v * v_noise;
 }
 
 void setup()
@@ -106,30 +110,32 @@ void setup()
 
 void loop()
 {
-  float x{0.f};
-  float y{0.f};
-  float z{0.f};
+  float x_acc{0.f};
+  float y_acc{0.f};
+  float z_acc{0.f};
 
   // myIMU.gyroscopeSampleRate();    // Note that this function does not return the rate, but just always 104 Hz
   // myIMU.accelerationSampleRate(); // Note that this function does not return the rate, but just always 104 Hz
 
-  /*
   if (myIMU.accelerationAvailable())
   {
     Serial.print("Time: ");
     Serial.println(millis() - Time);
     Time = millis();
 
-    myIMU.readAcceleration(x, y, z);
+    myIMU.readAcceleration(x_acc, y_acc, z_acc);
 
-    Serial.print(x);
-    Serial.print('\t');
-    Serial.print(y);
-    Serial.print('\t');
-    Serial.println(z);
-  }*/
+    // Serial.print(x);
+    // Serial.print('\t');
+    // Serial.print(y);
+    // Serial.print('\t');
+    // Serial.println(z);
+  }
 
-  Matrix<1, 4> measurement = {0}; // FIXME This is raw measurement
+  float a = x_acc;
+
+  Matrix<1, 4> z = {x, v, a, b};
+
   Eye<4, 4> state_estimate;
   kalman(state_estimate);
 }
