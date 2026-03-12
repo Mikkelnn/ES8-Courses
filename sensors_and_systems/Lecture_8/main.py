@@ -1,4 +1,7 @@
 from math import sqrt
+import random as rnd
+import numpy as np
+
 
 def intersecting_points(line: tuple[float, float], circle: tuple[float, float, float]) -> tuple[float,float]: 
     result: list[tuple[float,float]] = []
@@ -77,9 +80,25 @@ def run_tests():
     two_intersecting()
     print("All tests passed")
 
+def robotSim():
+    robotRadius = 1
+    a, b = rnd.uniform(1,10), rnd.uniform(1,10)
+    circle = (a, b, robotRadius)
+    print(f"Robot center point {a}, {b}")
+    for i in np.linspace(0, np.pi, 1000):
+        line = (0, np.tan(i))
+        result = intersecting_points(line, circle)
+        if len(result)!=0:
+            printString = ''
+            for n in result:
+                printString += f'x = {n[0]:.2f} y = {n[1]:.2f}'
+            print(f"{len(result)} points found at angle {i}. The points are : {printString}")
+
 
 def main():
-    run_tests()
+    # run_tests()
+    robotSim()
+
 
 
 if __name__ == "__main__":
