@@ -1,13 +1,14 @@
 function [exectime, data] = receiver_code(seg,data)
-
+global Nt
 
     msg = ttGetMsg(1);
     if(length(msg)>0)
-       ttAnalogOut(1,ttCurrentTime-msg(1));
+       Nt = Nt+1
+       ttAnalogOut(1,Nt)
     else
        %ttAnalogOut(1,ttCurrentTime);
     end
-    exectime = -1;
+    exectime = 0.001;
 
 
     
