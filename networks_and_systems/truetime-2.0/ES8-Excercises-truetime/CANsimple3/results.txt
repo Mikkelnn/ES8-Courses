@@ -1,0 +1,8 @@
+> mean(delays)
+ans =  0.0359
+
+> std(delays)
+ans = 0.0468
+
+> std(delays)/mean(delays)
+ans = 1.3061
