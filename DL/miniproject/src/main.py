@@ -13,6 +13,7 @@ import keras.optimizers as ko
 from tqdm import tqdm
 import sklearn.metrics as sklearn
 import shutil
+from loaddata import Data
 
 
 # GENEREL_PATH = Path("../../../")
@@ -20,6 +21,7 @@ GENEREL_PATH = Path("/scratch")  # /scratch # Use full path for correct mapping 
 RESULTS_PATH = GENEREL_PATH / "results"
 TRAINING_DATA_PATH = GENEREL_PATH / "zero_one/training_data" # "big_training_data"
 VALIDATE_DATA_PATH = GENEREL_PATH / "zero_one/validate_data" # "training_data"
+
 
 log = get_logger()
 ai_handler = AiHandler(RESULTS_PATH) # namedResultDir="12-12-2025_09:51:09"
@@ -67,41 +69,51 @@ def main():
                                     metrics=["accuracy"]
                                     )
 
-            def loader_func_label(f): 
-                label = np.load(f) # shape (2,) → [range, velocity]
-                # return label
-                return np.array([1,0]) if (sum(label) == 0) else np.array([0,1])
-                
-            def loader_func_data(f): 
-                # data = (np.load(f)[0])[... , None]
-                data = np.load(f)
-                return np.nan_to_num(data, nan=0.0)
+            # def loader_func_label(f): 
+            #     label = np.load(f) # shape (2,) → [range, velocity]
+            #     # return label
+            #     return np.array([1,0]) if (sum(label) == 0) else np.array([0,1])
+            #     
+            # def loader_func_data(f): 
+            #     # data = (np.load(f)[0])[... , None]
+            #     data = np.load(f)
+            #     return np.nan_to_num(data, nan=0.0)
+            # 
+            # labeld_data = ai_handler.dataset_from_data_and_labels(
+            #     data_dir=TRAINING_DATA_PATH / "input",
+            #     label_dir=TRAINING_DATA_PATH / "labels",
+            #     batch_size=batch_size,
+            #     shuffle=True,
+            #     loader_func_label=loader_func_label,
+            #     loader_func_data=loader_func_data
+            # )
+            # labeld_validation = ai_handler.dataset_from_data_and_labels(
+            #     data_dir=VALIDATE_DATA_PATH / "input",
+            #     label_dir=VALIDATE_DATA_PATH / "labels",
+            #     batch_size=batch_size,
+            #     shuffle=False,
+            #     loader_func_label=loader_func_label,
+            #     loader_func_data=loader_func_data
+            # )
+            # 
+            # # ai_handler.launch_tensorboard_threaded() # Not supported on AI-LAB
+            # history = ai_handler.fit_model(
+            #     compiled_model,
+            #     train_data=labeld_data,
+            #     val_data=labeld_validation,
+            #     epochs=epochs,
+            #     batch_size=batch_size,
+            #     initialEpoch=initial_epoch
+            # )
 
-            labeld_data = ai_handler.dataset_from_data_and_labels(
-                data_dir=TRAINING_DATA_PATH / "input",
-                label_dir=TRAINING_DATA_PATH / "labels",
-                batch_size=batch_size,
-                shuffle=True,
-                loader_func_label=loader_func_label,
-                loader_func_data=loader_func_data
-            )
-            labeld_validation = ai_handler.dataset_from_data_and_labels(
-                data_dir=VALIDATE_DATA_PATH / "input",
-                label_dir=VALIDATE_DATA_PATH / "labels",
-                batch_size=batch_size,
-                shuffle=False,
-                loader_func_label=loader_func_label,
-                loader_func_data=loader_func_data
-            )
+            ld = Data()
 
-            # ai_handler.launch_tensorboard_threaded() # Not supported on AI-LAB
-            history = ai_handler.fit_model(
-                compiled_model,
-                train_data=labeld_data,
-                val_data=labeld_validation,
-                epochs=epochs,
-                batch_size=batch_size,
-                initialEpoch=initial_epoch
+            history = compiled_model.fit(
+                ld.x_train,
+                validation_data=ld.y_train,
+                epochs=10,
+                batch_size=64,
+                initial_epoch=0
             )
 
             ai_handler.set_time_stop()
