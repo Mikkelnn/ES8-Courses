@@ -100,15 +100,15 @@ def main():
             val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_test, data.y_test))
 
             buffer_size = 50000
+            batch_size = 64
 
-            train.shuffle(buffer_size).prefetch(ai_handler.tf.data.AUTOTUNE)
-            val.shuffle(buffer_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
 
             history = compiled_model.fit(
                 train,
                 validation_data=val,
                 epochs=10,
-                batch_size=64,
                 initial_epoch=0
             )
 
