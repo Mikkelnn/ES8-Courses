@@ -14,5 +14,5 @@ singularity exec --nv -B ~/ES8-Courses/DL/miniproject:/scratch \
   /bin/bash -lc "export OMP_NUM_THREADS=\${SLURM_CPUS_PER_TASK}; \
   export TF_NUM_INTRAOP_THREADS=\${SLURM_CPUS_PER_TASK}; \
   export TF_NUM_INTEROP_THREADS=2; \
-  source /scratch/ESD7-Project/BigBrother/.venv/bin/activate; \
-  python /scratch/ESD7-Project/BigBrother/src/main2.py"
+  source /scratch/.venv/bin/activate; \
+  python /scratch/src/main.py"
