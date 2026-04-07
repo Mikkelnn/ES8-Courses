@@ -1,6 +1,7 @@
 from tensorflow.keras.layers import *
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, Model
 import tensorflow as tf #noqa
+from tensorflow.keras.applications import ConvNeXtTiny
 
 def defineModel_image_10_classes():
 
@@ -29,3 +30,19 @@ def defineModel_image_10_classes():
     ])
 
     return model
+
+def defineModel_convnext_10_classes():
+    inputs = Input(shape=(32, 32, 3))
+
+    backbone = ConvNeXtTiny(
+        include_top=False,
+        weights=None,
+        input_tensor=inputs,
+        pooling=None,
+    )
+
+    x = GlobalAveragePooling2D()(backbone.output)
+    x = Dense(256, activation="relu")(x)
+    outputs = Dense(10, activation="softmax")(x)
+
+    return Model(inputs=inputs, outputs=outputs, name="convnext_tiny_cifar10")
