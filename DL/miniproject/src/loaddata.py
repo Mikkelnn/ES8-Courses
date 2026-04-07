@@ -26,3 +26,8 @@ class Data():
             plt.imshow(self.X_train[i])
             plt.xlabel(self.CLASS_LABELS[np.argmax(self.y_train[i])])
         plt.show()
+
+
+if __name__ == "__main__":
+    data = Data()
+    data.visualize()
