@@ -5,7 +5,7 @@ import tensorflow as tf #noqa
 def defineModel_image_10_classes():
 
     model = Sequential([
-        Input(shape=(32, 32, 1)),
+        Input(shape=(32, 32, 3)),
         
         # Block 1
         Conv2D(128, (3, 3), activation='relu', padding="same"),
@@ -23,6 +23,7 @@ def defineModel_image_10_classes():
         MaxPooling2D(pool_size=(2, 2)),
 
         GlobalMaxPooling2D(),
+        Dense(256, activation='relu'),
         Dense(256, activation='relu'),
         Dense(10, activation="softmax"),
     ])
