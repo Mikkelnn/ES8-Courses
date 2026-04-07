@@ -96,11 +96,17 @@ def main():
             #     loader_func_data=loader_func_data
             # )
 
-            ai_handler.tf.data.Dataset.from_tensor_slices((data.x_train, data.CLASS_LABELS))
+            train = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_train, data.y_train))
+            val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_test, data.y_test))
+
+            buffer_size = 50000
+
+            train.shuffle(buffer_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            val.shuffle(buffer_size).prefetch(ai_handler.tf.data.AUTOTUNE)
 
             history = compiled_model.fit(
-                ld.x_train,
-                validation_data=ld.y_train,
+                train,
+                validation_data=val,
                 epochs=10,
                 batch_size=64,
                 initial_epoch=0

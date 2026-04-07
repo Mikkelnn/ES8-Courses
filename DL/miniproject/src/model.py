@@ -22,7 +22,7 @@ def defineModel_image_10_classes():
         Conv2D(512, (3, 3), activation='relu', padding="same"),
         MaxPooling2D(pool_size=(2, 2)),
 
-        GlobalMaxPooling1D(),
+        GlobalMaxPooling2D(),
         Dense(256, activation='relu'),
         Dense(10, activation="softmax"),
     ])
