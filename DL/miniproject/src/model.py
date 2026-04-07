@@ -1,5 +1,5 @@
 from tensorflow.keras.layers import *
-from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.models import Sequential
 import tensorflow as tf #noqa
 
 def defineModel_image_10_classes():

@@ -1,6 +1,8 @@
 ## Run this script from root context ie the level where "training_data" and "validate_data" exist
 
-import os, random, shutil
+import os
+import random
+import shutil
 
 src_root = "zero_one/training_data"
 dst_root = "zero_one/validate_data"

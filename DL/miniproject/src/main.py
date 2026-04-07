@@ -6,8 +6,6 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import numpy as np
-import math
-from sklearn.metrics import roc_curve, auc
 import keras.losses as kl
 import keras.optimizers as ko
 from tqdm import tqdm
@@ -15,9 +13,10 @@ import sklearn.metrics as sklearn
 import shutil
 from loaddata import Data
 
+data = Data()
 
 # GENEREL_PATH = Path("../../../")
-GENEREL_PATH = Path("/scratch")  # /scratch # Use full path for correct mapping on ai-lab container
+GENEREL_PATH = Path(".")  # /scratch # Use full path for correct mapping on ai-lab container
 RESULTS_PATH = GENEREL_PATH / "results"
 TRAINING_DATA_PATH = GENEREL_PATH / "zero_one/training_data" # "big_training_data"
 VALIDATE_DATA_PATH = GENEREL_PATH / "zero_one/validate_data" # "training_data"
@@ -25,6 +24,7 @@ VALIDATE_DATA_PATH = GENEREL_PATH / "zero_one/validate_data" # "training_data"
 
 log = get_logger()
 ai_handler = AiHandler(RESULTS_PATH) # namedResultDir="12-12-2025_09:51:09"
+
 
 
 def main():
@@ -73,12 +73,12 @@ def main():
             #     label = np.load(f) # shape (2,) → [range, velocity]
             #     # return label
             #     return np.array([1,0]) if (sum(label) == 0) else np.array([0,1])
-            #     
+                
             # def loader_func_data(f): 
             #     # data = (np.load(f)[0])[... , None]
             #     data = np.load(f)
             #     return np.nan_to_num(data, nan=0.0)
-            # 
+
             # labeld_data = ai_handler.dataset_from_data_and_labels(
             #     data_dir=TRAINING_DATA_PATH / "input",
             #     label_dir=TRAINING_DATA_PATH / "labels",
@@ -95,18 +95,8 @@ def main():
             #     loader_func_label=loader_func_label,
             #     loader_func_data=loader_func_data
             # )
-            # 
-            # # ai_handler.launch_tensorboard_threaded() # Not supported on AI-LAB
-            # history = ai_handler.fit_model(
-            #     compiled_model,
-            #     train_data=labeld_data,
-            #     val_data=labeld_validation,
-            #     epochs=epochs,
-            #     batch_size=batch_size,
-            #     initialEpoch=initial_epoch
-            # )
 
-            ld = Data()
+            ai_handler.tf.data.Dataset.from_tensor_slices((data.x_train, data.CLASS_LABELS))
 
             history = compiled_model.fit(
                 ld.x_train,
@@ -117,9 +107,9 @@ def main():
             )
 
             ai_handler.set_time_stop()
-            
+
             ai_handler.save_model(compiled_model)
-            
+
             acc = history.history["accuracy"]
             val_acc = history.history["val_accuracy"]
             loss = history.history["loss"]
@@ -156,7 +146,7 @@ def main():
             plt.savefig(ai_handler.result_path / "loss.png", format="png")
             plt.close()
 
-            confusion_matrix()
+            #confusion_matrix()
 
         except Exception as e:
             # pass
@@ -225,7 +215,6 @@ def confusion_matrix():
         #elif np.array_equal(act, [1,0]) and np.array_equal(pre, [1,0]):
         #    TN += 1
 
-
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
 
@@ -293,6 +282,6 @@ def confusion_matrix():
     #return cm
 
 if __name__ == "__main__":
-    # load_predict()
-    # main()
-    _ = confusion_matrix()
+    #load_predict()
+    main()
+    #_ = confusion_matrix()

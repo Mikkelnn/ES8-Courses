@@ -1,5 +1,4 @@
-import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import datasets
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,11 +22,10 @@ class Data():
             plt.xticks([])
             plt.yticks([])
             plt.grid(False)
-            plt.imshow(self.X_train[i])
+            plt.imshow(self.x_train[i])
             plt.xlabel(self.CLASS_LABELS[np.argmax(self.y_train[i])])
         plt.show()
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     data = Data()
     data.visualize()
