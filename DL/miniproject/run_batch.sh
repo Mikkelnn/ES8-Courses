@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=space-debris
+#SBATCH --job-name=DL-cifar10
 #SBATCH --output=my_job.out
 #SBATCH --error=my_job.err
 #SBATCH --mem=24G
