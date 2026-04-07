@@ -166,120 +166,194 @@ def load_predict(modelPath = "results/26-09-2025_12:15:53/sum_diff_model.keras")
     res = ai_handler.predict(model, [0.1, 0.3])
     print(res)
 
-def confusion_matrix():
-    modelPath = "../models/detector_15_12_2025"
+# def confusion_matrix():
+#     modelPath = "../models/detector_15_12_2025"
 
-    model = ai_handler.load_model_directory(modelPath)
+#     model = ai_handler.load_model_directory(modelPath)
     
-    def loader_func_data(f): 
-        # data = np.load(f)[... , None]
-        data = np.load(f)
-        return np.nan_to_num(data, nan=0.0)
+#     def loader_func_data(f): 
+#         # data = np.load(f)[... , None]
+#         data = np.load(f)
+#         return np.nan_to_num(data, nan=0.0)
 
-    def loader_func_label(f):
-        arr = np.load(f)
-        # class 0: no debris (sum == 0), class 1: debris present (sum != 0)        
-        return 0 if (np.sum(arr) == 0) else 1
+#     def loader_func_label(f):
+#         arr = np.load(f)
+#         # class 0: no debris (sum == 0), class 1: debris present (sum != 0)        
+#         return 0 if (np.sum(arr) == 0) else 1
     
-        #return np.array([1,0]) if (sum(np.load(f)) == 0) else np.array([0,1])
+#         #return np.array([1,0]) if (sum(np.load(f)) == 0) else np.array([0,1])
 
-    data_dir, label_dir = Path(TRAINING_DATA_PATH / "input"), Path(TRAINING_DATA_PATH / "labels")
-    data_files  = sorted(str(f) for f in Path(data_dir).glob("*"))
-    label_files = sorted(str(f) for f in Path(label_dir).glob("*"))
-    assert len(data_files) == len(label_files), "Data and label counts differ"
+#     data_dir, label_dir = Path(TRAINING_DATA_PATH / "input"), Path(TRAINING_DATA_PATH / "labels")
+#     data_files  = sorted(str(f) for f in Path(data_dir).glob("*"))
+#     label_files = sorted(str(f) for f in Path(label_dir).glob("*"))
+#     assert len(data_files) == len(label_files), "Data and label counts differ"
     
-    # N, TP, FP, TN, FN = len(data_files), 0, 0, 0, 0
+#     # N, TP, FP, TN, FN = len(data_files), 0, 0, 0, 0
 
-    y_true = []
-    y_pred = []
+#     y_true = []
+#     y_pred = []
 
-    for data_file, label_file in tqdm(zip(data_files, label_files), total=len(data_files)):
-        pre = ai_handler.predict(model, loader_func_data(data_file))
+#     for data_file, label_file in tqdm(zip(data_files, label_files), total=len(data_files)):
+#         pre = ai_handler.predict(model, loader_func_data(data_file))
 
-        pre_idx = int(np.argmax(pre, axis=-1)) 
-        act_idx = loader_func_label(label_file) 
+#         pre_idx = int(np.argmax(pre, axis=-1)) 
+#         act_idx = loader_func_label(label_file) 
 
-        label = np.load(label_file)
+#         label = np.load(label_file)
 
-        log.info(f"pre: {pre}, label_raw: {label}, label_range: {label[0] * 1000} m, label_velocity: {label[1] * 7500} m/s")
+#         log.info(f"pre: {pre}, label_raw: {label}, label_range: {label[0] * 1000} m, label_velocity: {label[1] * 7500} m/s")
 
-        y_true.append(act_idx)
-        y_pred.append(pre_idx)
+#         y_true.append(act_idx)
+#         y_pred.append(pre_idx)
 
-        #if np.array_equal(act, [0,1]) and np.array_equal(pre, [0,1]):
-        #    TP += 1
-        #elif np.array_equal(act, [0,1]) and np.array_equal(pre, [1,0]):
-        #    FN += 1
-        #elif np.array_equal(act, [1,0]) and np.array_equal(pre, [0,1]):
-        #    FP += 1
-        #elif np.array_equal(act, [1,0]) and np.array_equal(pre, [1,0]):
-        #    TN += 1
+#         #if np.array_equal(act, [0,1]) and np.array_equal(pre, [0,1]):
+#         #    TP += 1
+#         #elif np.array_equal(act, [0,1]) and np.array_equal(pre, [1,0]):
+#         #    FN += 1
+#         #elif np.array_equal(act, [1,0]) and np.array_equal(pre, [0,1]):
+#         #    FP += 1
+#         #elif np.array_equal(act, [1,0]) and np.array_equal(pre, [1,0]):
+#         #    TN += 1
 
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
+#     y_true = np.array(y_true)
+#     y_pred = np.array(y_pred)
 
-    log.info(f"count: {len(y_true)}, targets: {np.sum(y_true==1)}, no targets: {np.sum(y_true==0)}")
+#     log.info(f"count: {len(y_true)}, targets: {np.sum(y_true==1)}, no targets: {np.sum(y_true==0)}")
 
-    #TP /= (TP + FN)
-    #FN /= (TP + FN)
-    #FP /= (FP + TN)
-    #TN /= (FP + TN)
+#     #TP /= (TP + FN)
+#     #FN /= (TP + FN)
+#     #FP /= (FP + TN)
+#     #TN /= (FP + TN)
     
-    cm_counts = sklearn.confusion_matrix(y_true, y_pred, labels=[1, 0])
+#     cm_counts = sklearn.confusion_matrix(y_true, y_pred, labels=[1, 0])
 
-    #cm = np.array([[TP, FN], [FP, TN]])
+#     #cm = np.array([[TP, FN], [FP, TN]])
     
-    TP, FN = cm_counts[0]
-    FP, TN = cm_counts[1]
+#     TP, FN = cm_counts[0]
+#     FP, TN = cm_counts[1]
     
-    # Optionally normalize per row (true class)
+#     # Optionally normalize per row (true class)
+#     cm_norm = cm_counts.astype(float)
+#     cm_norm[0] /= (TP + FN) if (TP + FN) > 0 else 1.0  # positive class row
+#     cm_norm[1] /= (FP + TN) if (FP + TN) > 0 else 1.0  # negative class row
+
+#     # Plot normalized confusion matrix
+#     plt.figure(figsize=(6, 6))
+#     plt.imshow(cm_norm, cmap='viridis', vmin=0.0, vmax=1.0)
+
+#     for i in range(cm_norm.shape[0]):
+#         for j in range(cm_norm.shape[1]):
+#             plt.text(j, i, f"{cm_norm[i, j]:.2f}", ha='center', va='center', color='black', fontsize=16)
+
+#     plt.xticks([0, 1], ['1', '0'])
+#     plt.yticks([0, 1], ['1', '0'])
+#     plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+#     plt.gca().xaxis.set_label_position('top')
+#     plt.xlabel('Predicted')
+#     plt.ylabel('Actual')
+#     plt.gca().spines[:].set_visible(False)
+
+#     plt.savefig(ai_handler.result_path / "confusion_matrix.svg", format="svg")
+#     plt.close()
+
+#     return cm_counts, cm_norm
+
+#     # Save
+#     #plt.figure(figsize=(6, 6))
+#     #plt.imshow(cm, cmap='viridis')
+
+#     # Add numbers in the middle of tiles
+#     #for i in range(cm.shape[0]):
+#     #    for j in range(cm.shape[1]):
+#     #        plt.text(j, i, f"{cm[i, j]:.2f}", ha='center', va='center', color='black', fontsize=16)
+
+#     # Add axis actual
+#     #plt.xticks([0, 1], ['1', '0'])
+#     #plt.yticks([0, 1], ['1', '0'])
+#     #plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+#     #plt.gca().xaxis.set_label_position('top')
+#     #plt.xlabel('Predicted')
+#     #plt.ylabel('Actual')
+#     #plt.gca().spines[:].set_visible(False)
+
+#     #plt.savefig(ai_handler.result_path / "confusion_matrix.svg", format="svg")
+#     #plt.close()
+    
+#     #return cm
+
+def confusion_matrix_cifar10(model, data, save_path=None):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import confusion_matrix
+
+    # --- Get data ---
+    x_test = data.x_test
+    y_test = data.y_test
+    class_labels = data.CLASS_LABELS
+
+    # --- Convert one-hot → class index ---
+    y_true = np.argmax(y_test, axis=1)
+
+    # --- Predictions ---
+    y_pred = np.argmax(model.predict(x_test, verbose=0), axis=1)
+
+    # --- Confusion matrix (counts) ---
+    cm_counts = confusion_matrix(y_true, y_pred, labels=list(range(10)))
+
+    # --- Normalize (row-wise) ---
     cm_norm = cm_counts.astype(float)
-    cm_norm[0] /= (TP + FN) if (TP + FN) > 0 else 1.0  # positive class row
-    cm_norm[1] /= (FP + TN) if (FP + TN) > 0 else 1.0  # negative class row
+    row_sums = cm_norm.sum(axis=1, keepdims=True)
+    cm_norm = np.divide(cm_norm, row_sums, where=row_sums != 0)
 
-    # Plot normalized confusion matrix
-    plt.figure(figsize=(6, 6))
+    # --- Confidence intervals (Wilson score, 95%) ---
+    def wilson_ci(k, n, z=1.96):
+        if n == 0:
+            return 0.0, 0.0
+        p = k / n
+        denom = 1 + z**2 / n
+        center = (p + z**2 / (2*n)) / denom
+        margin = (z * np.sqrt((p*(1-p)/n) + (z**2/(4*n**2)))) / denom
+        return center - margin, center + margin
+
+    ci_low = np.zeros_like(cm_norm)
+    ci_high = np.zeros_like(cm_norm)
+
+    for i in range(10):
+        n = row_sums[i, 0]
+        for j in range(10):
+            k = cm_counts[i, j]
+            low, high = wilson_ci(k, n)
+            ci_low[i, j] = low
+            ci_high[i, j] = high
+
+    # --- Plot ---
+    plt.figure(figsize=(10, 10))
     plt.imshow(cm_norm, cmap='viridis', vmin=0.0, vmax=1.0)
 
-    for i in range(cm_norm.shape[0]):
-        for j in range(cm_norm.shape[1]):
-            plt.text(j, i, f"{cm_norm[i, j]:.2f}", ha='center', va='center', color='black', fontsize=16)
+    for i in range(10):
+        for j in range(10):
+            plt.text(
+                j, i,
+                f"{cm_norm[i,j]:.2f}\n[{ci_low[i,j]:.2f},{ci_high[i,j]:.2f}]",
+                ha='center', va='center', fontsize=7
+            )
 
-    plt.xticks([0, 1], ['1', '0'])
-    plt.yticks([0, 1], ['1', '0'])
-    plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
-    plt.gca().xaxis.set_label_position('top')
+    plt.xticks(range(10), class_labels, rotation=45)
+    plt.yticks(range(10), class_labels)
+
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.gca().spines[:].set_visible(False)
+    plt.title('Confusion Matrix (Normalized with 95% CI)')
+    plt.tight_layout()
 
-    plt.savefig(ai_handler.result_path / "confusion_matrix.svg", format="svg")
+    if save_path is not None:
+        plt.savefig(save_path, format="svg")
+    else:
+        plt.show()
+
     plt.close()
 
-    return cm_counts, cm_norm
-
-    # Save
-    #plt.figure(figsize=(6, 6))
-    #plt.imshow(cm, cmap='viridis')
-
-    # Add numbers in the middle of tiles
-    #for i in range(cm.shape[0]):
-    #    for j in range(cm.shape[1]):
-    #        plt.text(j, i, f"{cm[i, j]:.2f}", ha='center', va='center', color='black', fontsize=16)
-
-    # Add axis actual
-    #plt.xticks([0, 1], ['1', '0'])
-    #plt.yticks([0, 1], ['1', '0'])
-    #plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
-    #plt.gca().xaxis.set_label_position('top')
-    #plt.xlabel('Predicted')
-    #plt.ylabel('Actual')
-    #plt.gca().spines[:].set_visible(False)
-
-    #plt.savefig(ai_handler.result_path / "confusion_matrix.svg", format="svg")
-    #plt.close()
-    
-    #return cm
+    return cm_counts, cm_norm, ci_low, ci_high
 
 if __name__ == "__main__":
     #load_predict()
