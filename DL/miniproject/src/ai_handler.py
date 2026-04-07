@@ -120,7 +120,7 @@ class AiHandler():
             )
             callbacks.append(tensorboard_cb)
 
-        self.log.info(f"Model training starting...")
+        self.log.info("Model training starting...")
 
         # with self.strategy.scope():
         history = model.fit(
@@ -132,7 +132,7 @@ class AiHandler():
             initial_epoch=initialEpoch
         )
 
-        self.log.info(f"Model training finished...")
+        self.log.info("Model training finished...")
 
         return history
 
@@ -327,7 +327,7 @@ class AiHandler():
         Files are matched by sorted order of filenames.
         """
         
-        self.log.info(f"Starting loding training data....")
+        self.log.info("Starting loding training data....")
 
         data_dir, label_dir = Path(data_dir), Path(label_dir)
         data_files  = sorted(str(f) for f in Path(data_dir).glob("*"))
@@ -396,7 +396,7 @@ class AiHandler():
         dataset = dataset.batch(batch_size).prefetch(self.tf.data.AUTOTUNE)
         # dataset = dataset.batch(batch_size)
 
-        self.log.info(f"Finished loding training data....")
+        self.log.info("Finished loding training data....")
         
         return dataset
 
@@ -418,7 +418,7 @@ class AiHandler():
             all_results = [p for p in RESULTS_PATH.iterdir() if p.is_dir() and p != self.result_path]
 
             if not all_results:
-                self.log.info(f"[ModelSearch] No previous model directories found (excluding current run).")
+                self.log.info("[ModelSearch] No previous model directories found (excluding current run).")
                 return False, 0, None
 
             latest_results = sorted(all_results, key=lambda x: datetime.strptime('_'.join(x.name.rsplit('_')[:2]), "%d-%m-%Y_%H:%M:%S"), reverse=True)[0]
@@ -445,7 +445,7 @@ class AiHandler():
             self.log.info(f"[ModelSearch] Found previous model '{latest_results.name}' up to epoch {last_epoch}.")
 
             if model is not None:
-                self.log.info(f"[ModelSearch] Model already provided, only loading weights.")
+                self.log.info("[ModelSearch] Model already provided, only loading weights.")
                 model = self.load_weights_directory(model, latest_results)
             else:
                 model = self.load_model_directory(latest_results)
