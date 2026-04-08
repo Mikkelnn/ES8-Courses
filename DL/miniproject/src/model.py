@@ -46,3 +46,22 @@ def defineModel_convnext_10_classes():
     outputs = Dense(10, activation="softmax")(x)
 
     return Model(inputs=inputs, outputs=outputs, name="convnext_tiny_cifar10")
+
+from tensorflow.keras.applications import DenseNet121
+
+
+def defineModel_densenet_10_classes():
+    inputs = Input(shape=(32, 32, 3))
+
+    backbone = DenseNet121(
+        include_top=False,
+        weights=None,
+        input_tensor=inputs,
+        pooling=None,
+    )
+
+    x = GlobalAveragePooling2D()(backbone.output)
+    x = Dense(256, activation="relu")(x)
+    outputs = Dense(10, activation="softmax")(x)
+
+    return Model(inputs=inputs, outputs=outputs, name="densenet121_cifar10")
