@@ -152,7 +152,7 @@ def main():
             plt.savefig(ai_handler.result_path / "loss.png", format="png")
             plt.close()
 
-            #confusion_matrix()
+            confusion_matrix_cifar10(model, data, save_path=ai_handler.result_path / "confusion_matrix.svg")
 
         except Exception as e:
             # pass
@@ -363,5 +363,8 @@ def confusion_matrix_cifar10(model, data, save_path=None):
 
 if __name__ == "__main__":
     #load_predict()
-    main()
+    # main()
     #_ = confusion_matrix()
+
+    (found, initial_epoch, model) = ai_handler.find_latest_model()
+    confusion_matrix_cifar10(model, data, save_path=ai_handler.result_path / "confusion_matrix.svg")
