@@ -102,7 +102,7 @@ def main():
             buffer_size = 50000
             # batch_size = 64
 
-            train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            train = train.shuffle(buffer_size).batch(batch_size) #.prefetch(ai_handler.tf.data.AUTOTUNE)
             # val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
     
             history = ai_handler.fit_model(
