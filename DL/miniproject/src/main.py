@@ -110,7 +110,8 @@ def main():
                 train_data=train,
                 val_data=0.20, # validation split
                 epochs=epochs,
-                initial_epoch=initial_epoch
+                batch_size=batch_size,
+                initialEpoch=initial_epoch
             )
             # history = compiled_model.fit(
             #     train,
