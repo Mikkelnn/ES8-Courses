@@ -5,11 +5,16 @@ import numpy as np
 
 class Data():
 
-    def __init__(self):
+    def __init__(self, val_split = 0.20):
         (self.x_train, self.y_train), (self.x_test, self.y_test) = datasets.cifar10.load_data()
 
         self.x_train = self.x_train.astype('float32') / 255.0 # scale to [0, 1]
         self.x_test = self.x_test.astype('float32') / 255.0
+
+        val_length = int(val_split * len(self.x_train))
+        self.x_val = self.x_train[-val_length:] 
+        self.y_val = self.y_train[-val_length:]
+
         self.y_train = to_categorical(self.y_train, 10) #Convert integer class vector to binary class matrix
         self.y_test = to_categorical(self.y_test, 10)
 

@@ -13,7 +13,7 @@ import sklearn.metrics as sklearn
 import shutil
 from loaddata import Data
 
-data = Data()
+data = Data(val_split=0.20)
 
 # GENEREL_PATH = Path("../../../")
 GENEREL_PATH = Path(".")  # /scratch # Use full path for correct mapping on ai-lab container
@@ -56,7 +56,7 @@ def main():
 
             # exit()
 
-            ai_handler.plot_block_diagram(model)
+            # ai_handler.plot_block_diagram(model)
 
             loss = kl.CategoricalFocalCrossentropy(
                 gamma=2.0,
@@ -97,18 +97,18 @@ def main():
             # )
 
             train = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_train, data.y_train))
-            # val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_test, data.y_test))
+            val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_val, data.y_val))
 
             buffer_size = 50000
             # batch_size = 64
 
-            train = train.shuffle(buffer_size).batch(batch_size) #.prefetch(ai_handler.tf.data.AUTOTUNE)
-            # val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            val = val.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
     
             history = ai_handler.fit_model(
                 model=compiled_model, 
                 train_data=train,
-                val_data=0.20, # validation split
+                val_data=val,
                 epochs=epochs,
                 batch_size=batch_size,
                 initialEpoch=initial_epoch
