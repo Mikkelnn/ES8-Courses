@@ -104,8 +104,8 @@ def main():
 
             train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
             # val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
-
-            history = ai_handler.fit(
+    
+            history = ai_handler.fit_model(
                 model=compiled_model, 
                 train_data=train,
                 val_data=0.20, # validation split
