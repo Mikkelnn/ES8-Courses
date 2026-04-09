@@ -3,7 +3,7 @@ from tensorflow.keras.models import Sequential, Model
 import tensorflow as tf #noqa
 from tensorflow.keras.applications import ConvNeXtTiny
 
-def defineModel_image_10_classes():
+def defineModel_VGG8():
 
     model = Sequential([
         Input(shape=(32, 32, 3)),
