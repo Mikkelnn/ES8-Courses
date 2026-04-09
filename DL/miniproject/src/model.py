@@ -21,7 +21,6 @@ def defineModel_VGG8():
         # Block 3
         Conv2D(512, (3, 3), activation='relu', padding="same"),
         Conv2D(512, (3, 3), activation='relu', padding="same"),
-        MaxPooling2D(pool_size=(2, 2)),
 
         GlobalMaxPooling2D(),
         Dense(256, activation='relu'),
@@ -61,7 +60,6 @@ def defineModel_VGG16():
         Conv2D(512, (3, 3), activation='relu', padding="same"),
         Conv2D(512, (3, 3), activation='relu', padding="same"),
         Conv2D(512, (3, 3), activation='relu', padding="same"),
-        MaxPooling2D(pool_size=(2, 2)),
 
         GlobalMaxPooling2D(),
         Dense(512, activation='relu'),
