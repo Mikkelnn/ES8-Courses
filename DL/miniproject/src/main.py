@@ -36,8 +36,8 @@ def main():
     with ai_handler.strategy.scope():
         model = None
         time_started = 0
-        batch_size = 1 # Decrease as model get larger to fit in GPU memory
-        epochs = 3
+        batch_size = 64 # Decrease as model get larger to fit in GPU memory
+        epochs = 10
         initial_epoch = 0
         train_on_latest_result = False
 
@@ -97,20 +97,27 @@ def main():
             # )
 
             train = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_train, data.y_train))
-            val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_test, data.y_test))
+            # val = ai_handler.tf.data.Dataset.from_tensor_slices((data.x_test, data.y_test))
 
             buffer_size = 50000
-            batch_size = 64
+            # batch_size = 64
 
             train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
-            val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
+            # val = val.batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
 
-            history = compiled_model.fit(
-                train,
-                validation_data=val,
-                epochs=10,
-                initial_epoch=0
+            history = ai_handler.fit(
+                model=compiled_model, 
+                train_data=train,
+                val_data=0.20, # validation split
+                epochs=epochs,
+                initial_epoch=initial_epoch
             )
+            # history = compiled_model.fit(
+            #     train,
+            #     validation_data=val,
+            #     epochs=10,
+            #     initial_epoch=0
+            # )
 
             ai_handler.set_time_stop()
 

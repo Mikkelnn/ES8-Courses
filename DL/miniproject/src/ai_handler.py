@@ -123,14 +123,25 @@ class AiHandler():
         self.log.info("Model training starting...")
 
         # with self.strategy.scope():
-        history = model.fit(
-            train_data,
-            validation_data=val_data,
-            epochs=epochs,
-            batch_size=batch_size,
-            callbacks=callbacks,
-            initial_epoch=initialEpoch
-        )
+        history = None
+        if isinstance(val_data, float):  # validation split provided instead of dataset
+            history = model.fit(
+                train_data,
+                validation_split=val_data,
+                epochs=epochs,
+                batch_size=batch_size,
+                callbacks=callbacks,
+                initial_epoch=initialEpoch
+            )
+        else:
+            history = model.fit(
+                train_data,
+                validation_data=val_data,
+                epochs=epochs,
+                batch_size=batch_size,
+                callbacks=callbacks,
+                initial_epoch=initialEpoch
+            )
 
         self.log.info("Model training finished...")
 
