@@ -39,7 +39,7 @@ def main():
         batch_size = 64 # Decrease as model get larger to fit in GPU memory
         epochs = 25
         initial_epoch = 0
-        train_on_latest_result = True
+        train_on_latest_result = False
 
         try:
             time_started = ai_handler.set_time_start()
