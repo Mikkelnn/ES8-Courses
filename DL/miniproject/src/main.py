@@ -50,8 +50,8 @@ def main():
                 if not found:
                     exit()
             else:
-                model = defineModel_VGG8()
-                # model = defineModel_VGG16()
+                # model = defineModel_VGG8()
+                model = defineModel_VGG16()
             
             model.summary()
 
