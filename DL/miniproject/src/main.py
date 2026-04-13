@@ -61,7 +61,7 @@ def main():
 
             # exit()
 
-            ai_handler.plot_block_diagram(model)
+            #ai_handler.plot_block_diagram(model)
 
             loss = kl.CategoricalFocalCrossentropy(
                 gamma=2.0,
