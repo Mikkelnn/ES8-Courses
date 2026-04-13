@@ -136,6 +136,31 @@ def defineModel_VGG4_flatten_regulazor():
 
     return model
 
+
+def defineModel_VGG4_dropout():
+    
+    model = Sequential([
+        Input(shape=(32, 32, 3)),
+        
+        # Block 1
+        Conv2D(16, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+
+        # Block 2
+        Conv2D(32, (3, 3), activation='relu', padding="same"),
+        Conv2D(64, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+
+        GlobalAveragePooling2D(),
+        Dense(128, activation='relu'),
+        Dropout(0.5),
+        Dense(10, activation="softmax"),
+    ])
+
+    return model
+
 def defineModel_convnext_10_classes():
     inputs = Input(shape=(32, 32, 3))
 
