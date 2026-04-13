@@ -2,6 +2,7 @@ from tensorflow.keras.layers import *
 from tensorflow.keras.models import Sequential, Model
 import tensorflow as tf #noqa
 from tensorflow.keras.applications import ConvNeXtTiny
+from tensorflow.keras import regularizers
 
 def defineModel_VGG8():
 
@@ -109,6 +110,28 @@ def defineModel_VGG4_flatten():
         Dense(256, activation='relu'),
         Dense(256, activation='relu'),
         Dense(10, activation="softmax"),
+    ])
+
+    return model
+
+def defineModel_VGG4_flatten_regulazor():
+    
+    model = Sequential([
+        Input(shape=(32, 32, 3)),
+        
+        # Block 1
+        Conv2D(16, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+
+        # Block 2
+        Conv2D(32, (3, 3), activation='relu', padding="same"),
+        Conv2D(64, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+
+        Flatten(),
+        Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+        Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+        Dense(10, activation="softmax", kernel_regularizer=regularizers.l2(0.001)),
     ])
 
     return model

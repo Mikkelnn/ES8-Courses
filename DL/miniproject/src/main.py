@@ -53,7 +53,8 @@ def main():
                 # model = defineModel_VGG8()
                 # model = defineModel_VGG16()
                 # model = defineModel_VGG4()
-                model = defineModel_VGG4_flatten()
+                # model = defineModel_VGG4_flatten()
+                model = defineModel_VGG4_flatten_regulazor()
             
             model.summary()
 
