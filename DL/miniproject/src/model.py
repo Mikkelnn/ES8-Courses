@@ -150,7 +150,6 @@ def defineModel_VGG4_dropout():
         # Block 2
         Conv2D(32, (3, 3), BatchNormalization(), activation='relu', padding="same"),
         Conv2D(64, (3, 3), BatchNormalization(), activation='relu', padding="same"),
-        MaxPooling2D(pool_size=(2, 2)),
 
         GlobalAveragePooling2D(),
         Dense(128, activation='relu'),
