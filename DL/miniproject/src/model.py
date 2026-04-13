@@ -91,6 +91,28 @@ def defineModel_VGG4():
 
     return model
 
+def defineModel_VGG4_flatten():
+    
+    model = Sequential([
+        Input(shape=(32, 32, 3)),
+        
+        # Block 1
+        Conv2D(16, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+
+        # Block 2
+        Conv2D(32, (3, 3), activation='relu', padding="same"),
+        Conv2D(64, (3, 3), activation='relu', padding="same"),
+        MaxPooling2D(pool_size=(2, 2)),
+
+        Flatten(),
+        Dense(256, activation='relu'),
+        Dense(256, activation='relu'),
+        Dense(10, activation="softmax"),
+    ])
+
+    return model
+
 def defineModel_convnext_10_classes():
     inputs = Input(shape=(32, 32, 3))
 

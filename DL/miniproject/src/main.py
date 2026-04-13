@@ -37,7 +37,7 @@ def main():
         model = None
         time_started = 0
         batch_size = 64 # Decrease as model get larger to fit in GPU memory
-        epochs = 25
+        epochs = 100
         initial_epoch = 0
         train_on_latest_result = False
 
@@ -52,7 +52,8 @@ def main():
             else:
                 # model = defineModel_VGG8()
                 # model = defineModel_VGG16()
-                model = defineModel_VGG4()
+                # model = defineModel_VGG4()
+                model = defineModel_VGG4_flatten()
             
             model.summary()
 
