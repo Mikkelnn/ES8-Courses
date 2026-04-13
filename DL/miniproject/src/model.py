@@ -3,6 +3,7 @@ from tensorflow.keras.models import Sequential, Model
 import tensorflow as tf #noqa
 from tensorflow.keras.applications import ConvNeXtTiny
 from tensorflow.keras import regularizers
+from tensorflow.keras.layers import BatchNormalization
 
 def defineModel_VGG8():
 
@@ -144,6 +145,7 @@ def defineModel_VGG4_dropout():
         
         # Block 1
         Conv2D(16, (3, 3), BatchNormalization(), activation='relu', padding="same"),
+        BatchNormalization(),
         MaxPooling2D(pool_size=(2, 2)),
         Dropout(0.25),
 
