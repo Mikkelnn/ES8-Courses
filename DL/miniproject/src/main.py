@@ -51,22 +51,28 @@ def main():
                     exit()
             else:
                 # model = defineModel_VGG8()
+                # model = defineModel_VGG8_dropout_batchnorm()
                 # model = defineModel_VGG16()
+                model = defineModel_VGG16_dropout_batchnorm()
                 # model = defineModel_VGG4()
                 # model = defineModel_VGG4_flatten()
                 # model = defineModel_VGG4_flatten_regulazor()
-                model = defineModel_VGG4_dropout()
+                # model = defineModel_VGG4_dropout()
+        
+
             
             model.summary()
 
             # exit()
 
-            #ai_handler.plot_block_diagram(model)
+            # ai_handler.plot_block_diagram(model)
 
-            loss = kl.CategoricalFocalCrossentropy(
-                gamma=2.0,
-                alpha=0.25
-            )
+            # loss = kl.CategoricalFocalCrossentropy(
+            #     gamma=2.0,
+            #     alpha=0.25
+            # )
+
+            loss = kl.CategoricalCrossentropy()
 
             compiled_model = ai_handler.compile_model(model,
                                     optimizer=ko.Adam(1e-4),
@@ -109,7 +115,26 @@ def main():
 
             train = train.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
             val = val.shuffle(buffer_size).batch(batch_size).prefetch(ai_handler.tf.data.AUTOTUNE)
-    
+
+            # Apply augmentation to training data
+            def augment_data(image, label):
+                # Random horizontal flip
+                image = ai_handler.tf.image.random_flip_left_right(image)
+                
+                # Random brightness adjustment
+                image = ai_handler.tf.image.random_brightness(image, 0.1)
+                
+                # Random contrast adjustment
+                image = ai_handler.tf.image.random_contrast(image, 0.9, 1.1)
+                
+                # Clip values back to [0, 1] after augmentation
+                image = ai_handler.tf.clip_by_value(image, 0.0, 1.0)
+                
+                return image, label
+
+            # Map augmentation to training dataset only
+            train = train.map(augment_data, num_parallel_calls=ai_handler.tf.data.AUTOTUNE) 
+
             history = ai_handler.fit_model(
                 model=compiled_model, 
                 train_data=train,
