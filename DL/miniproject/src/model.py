@@ -71,6 +71,76 @@ def defineModel_VGG16():
 
     return model
 
+def defineModel_VGG16_dropout_batchnorm():
+
+    model = Sequential([
+        Input(shape=(32, 32, 3)),
+        
+        # Block 1
+        Conv2D(64, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(64, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+
+        # Block 2
+        Conv2D(128, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(128, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+    
+        # Block 3
+        Conv2D(256, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(256, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+
+        # Block 4
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Dropout(0.25),
+
+        # Block 5
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+        Conv2D(512, (3, 3), padding="same"),
+        BatchNormalization(),
+        Activation('relu'),
+
+        GlobalAveragePooling2D(),
+        
+        Dense(512, activation='relu'),
+        
+        Dropout(0.5),
+        
+        Dense(10, activation="softmax"),
+    ])
+
+    return model
+
 def defineModel_VGG4():
     
     model = Sequential([
@@ -161,7 +231,8 @@ def defineModel_VGG4_dropout():
         Dropout(0.25),
 
         GlobalAveragePooling2D(),
-        Dense(128, activation='relu'),
+        Dense(256, activation='relu'),
+        Dense(256, activation='relu'),
         Dropout(0.5),
         Dense(10, activation="softmax"),
     ])
