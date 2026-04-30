@@ -341,12 +341,14 @@ name = "sensors-and-systems"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "matplotlib" },
     { name = "numpy" },
     { name = "pypfilt" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "numpy", specifier = ">=2.4.3" },
     { name = "pypfilt", specifier = ">=0.8.7" },
 ]
