@@ -105,17 +105,23 @@ print()
 
 M = 2.4
 
+def sample_pdf_v2():
+    while True:
+        x = random.uniform(0, 4)
+        y = random.uniform(0, 0.6)
+        if y <= f(x):
+            return x
 
 def sample_pdf():
     while True:
         # proposal sample
         x = random.uniform(0, 4)
-
+        
         # acceptance probability
-        acceptance = f(x) / (M * (1 / 4))
+        acceptance = f(x) / (M * (1/4)) 
 
         # accept/reject
-        if random.random() < acceptance:
+        if random.random() <= acceptance:
             return x
 
 
@@ -125,7 +131,7 @@ def sample_pdf():
 
 N = 100000
 
-samples = np.array([sample_pdf() for _ in range(N)])
+samples = np.array([sample_pdf_v2() for _ in range(N)])
 
 sample_mean = np.mean(samples)
 sample_variance = np.var(samples)
