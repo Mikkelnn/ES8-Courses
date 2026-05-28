@@ -145,7 +145,7 @@ class KalmanFilter:
             assert self.f is not None and self.F_jacobian is not None
             # Nonlinear prediction: x = f(x, u)
             self.x = self.f(self.x, u).reshape(-1, 1)
-            # Linearize: F = ∂f/∂x
+            # Linearize: F = df/dx
             F = self.F_jacobian(self.x, u)
             # Covariance: P = F*P*F^T + Q
             self.P = F @ self.P @ F.T + self.Q
@@ -189,7 +189,7 @@ class KalmanFilter:
             # Innovation: y = z - h(x)
             z_pred = self.h(self.x)
             y = z - z_pred.reshape(-1, 1)
-            # Linearize: H = ∂h/∂x
+            # Linearize: H = dh/dx
             H = self.H_jacobian(self.x)
             # Innovation covariance: S = H*P*H^T + R
             S = H @ self.P @ H.T + self.R
