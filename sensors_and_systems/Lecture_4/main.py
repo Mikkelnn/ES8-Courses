@@ -137,7 +137,7 @@ def extended_kalman_filter(y, u, p: SystemParams):
         P_prior_log[k] = P_prior
 
         # update
-        H_k = p.c * np.cos(p.c * x_hat_prior + p.phih)
+        H_k = p.c * np.cos(p.c * x_hat_prior + p.phih) # Cosine is already a Jacobian
         K = P_prior * H_k / (H_k * P_prior * H_k + p.R)
         x_hat_posterior = x_hat_prior + K * (y[k] - y_hat)
         P_posterior = (1 - K * H_k) * P_prior * (1 - K * H_k) + K * p.R * K
