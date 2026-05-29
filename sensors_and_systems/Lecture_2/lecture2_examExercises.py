@@ -94,16 +94,16 @@ print()
 #   g(x)=1/4
 #
 # Need M such that:
-#   f(x) <= M g(x)
+#   f(x) <= C g(x)
 #
 # Since max f = 0.6:
 #
-#   M >= 0.6 / (1/4) = 2.4
+#   C >= 0.6 / (1/4) = 2.4
 #
-# We'll use M = 2.4
+# We'll use C = 2.4
 # ------------------------------------------------------------
 
-M = 2.4
+C = 2.4
 
 def sample_pdf_v2():
     while True:
