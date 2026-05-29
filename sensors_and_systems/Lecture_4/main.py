@@ -265,10 +265,6 @@ def ut_alg(x, P, alpha = 1, kappa = 2, beta = 0):
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    for _ in range(steps):
-        pass
-=======
     run_comparison(
         make_base_params(c=1, phif=0, phih=0),
         "Task 4a: a=0.95, b=0.05, c=1,  phif=0,     phih=0,     fu=0.02",
@@ -296,4 +292,3 @@ if __name__ == "__main__":
 #
 #   EKF re-linearises at current estimate each step, so it tracks the true system behaviour.
 #   KF uses fixed linear approximation valid only at origin — breaks when system deviates.
->>>>>>> f2114ded8fc6bb2e8406df61c854ffdb3acdfba7
