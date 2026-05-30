@@ -1,6 +1,7 @@
-# Lecture 9 — Kalman Filter & Extended Kalman Filter
+# Lecture 9 — Kalman Filter, Extended Kalman Filter & UKF Exercises
 
-Python conversion of the original MATLAB files (`LSim.m + KF.m` → `KF.py`, `NLSim.m + EKF.m` → `EKF.py`).
+All five exercises are in a single file: `lecture9_all_exercises.py`.
+KF, EKF, and UKF are implemented as plain functions (no classes), ported from Lecture 4.
 
 ---
 
@@ -10,17 +11,36 @@ From the `sensors_and_systems/` root (where `pyproject.toml` lives):
 
 ```sh
 uv sync
-uv run python Lecture_9/KF.py     # runs Kalman Filter on the linear system
-uv run python Lecture_9/EKF.py    # runs Extended Kalman Filter on the nonlinear system
+uv run python Lecture_9/lecture9_all_exercises.py
 ```
 
-Plots and a text summary are saved automatically to `Lecture_9/results/`.
+All plots and text summaries are saved to `Lecture_9/results/`.
+
+---
+
+## Exercises overview
+
+| Exercise | Topic | Key insight |
+|----------|-------|-------------|
+| **Exercise 1** | Whiteness test | Innovations of a well-tuned filter are uncorrelated (white noise) |
+| **Exercise 2** | Normality test | KF innovations are Gaussian; EKF/UKF may deviate due to nonlinearity |
+| **Exercise 3** | Uniform vs Normal noise | KF is BLUE for any noise; normality fails when noise is not Gaussian |
+| **Exercise 4** | Effect of sample size N | CI width shrinks as 1/sqrt(N); larger N detects smaller correlations |
+| **Exercise 5** | EKF joint state + parameter estimation | Augment state [x; a] so EKF learns the true 'a' online from measurements |
+
+### Filter implementations (ported from Lecture 4)
+
+| Filter | Source function | System |
+|--------|----------------|--------|
+| KF  | `Lecture_4/main.py` → `linear_kalman_filter()` | Linear: `y = c*x + v` |
+| EKF | `Lecture_4/main.py` → `extended_kalman_filter()` | Nonlinear: `y = sin(c*x + phi_h) + v` |
+| UKF | `Lecture_4/lecture4_exercises.py` → `ukf_scalar()` | Nonlinear (same as EKF) |
 
 ---
 
 ## System Models
 
-### Linear system — `KF.py`
+### Linear system (used in KF exercises)
 
 ```
 x[i] = a*x[i-1] + b*u[i-1] + w[i-1]     process equation
@@ -29,33 +49,27 @@ y[i] = c*x[i] + v[i]                      measurement equation
 w ~ N(0, Q),  v ~ N(0, R)
 ```
 
-Parameters used (from `LSim.m`):
+| Symbol   | Value  | Meaning |
+|----------|--------|---------|
+| `a`      | 0.95   | State transition — slow AR(1), time constant ~19 steps |
+| `b`      | 0.05   | Input gain = 1 - a (DC gain = 1) |
+| `c`      | 1.0    | Direct state observation |
+| `sigmaw` | 0.0156 | = 0.05 * sqrt(1 - 0.95^2) |
+| `sigmav` | 0.01   | Small measurement noise |
 
-| Symbol   | Value   | Meaning |
-|----------|---------|---------|
-| `a`      | 0.95    | State transition — slow AR(1), time constant ≈ 19 steps |
-| `b`      | 0.05    | Input gain = k*(1-a) with k=1, so DC gain = b/(1-a) = 1 |
-| `c`      | 1.0     | Direct state observation |
-| `fu`     | 0.02    | Normalized frequency of square-wave input → period = 50 steps |
-| `sigmaw` | 0.0156  | = 0.05 * sqrt(1 − 0.95²), keeps Var(x_ss) = 0.0025 |
-| `sigmav` | 0.01    | Small measurement noise (active branch in `LSim.m`) |
-
-### Nonlinear system — `EKF.py`
+### Nonlinear system (used in EKF / UKF exercises)
 
 ```
 x[i] = a*sin(x[i-1] + phi_f) + b*u[i-1] + w[i-1]    process equation
 y[i] = sin(c*x[i] + phi_h) + v[i]                     measurement equation
 ```
 
-Parameters used (from `NLSim.m`, active branches only):
-
-| Symbol   | Value   | Meaning |
-|----------|---------|---------|
-| `a`      | 0.95    | Amplitude of sin in state transition |
-| `c`      | 10.0    | Steep measurement nonlinearity (active: `if 1; c=10; end`) |
-| `phi_f`  | 0.0     | Phase offset in state transition |
-| `phi_h`  | 0.0     | Phase offset in measurement |
-| `sigmav` | 0.1     | Larger noise than linear case |
+| Symbol   | Value  | Meaning |
+|----------|--------|---------|
+| `c`      | 10.0   | Steep measurement nonlinearity — oscillates rapidly |
+| `phi_f`  | 0.0    | Phase offset in state transition |
+| `phi_h`  | 0.0    | Phase offset in measurement |
+| `sigmav` | 0.1    | Larger noise than linear case |
 
 ---
 
@@ -67,20 +81,17 @@ Parameters used (from `NLSim.m`, active branches only):
 xhm = x0,   Pm = P0,   yhm = c * xhm
 ```
 
-Numerical example with `a=0.95, c=1, Q=2.44e-4, R=1e-4, P0=2.44e-4, x0=0`:
-- `xhm = 0`,  `Pm = 2.44e-4`,  `yhm = 0`
+### One cycle (i = 0, 1, ..., n-1)
 
-### One cycle (repeated for i = 0, 1, …, n-1)
-
-**Step 1 — Measurement update (correct with y[i]):**
+**Measurement update:**
 
 ```
-K   = Pm * c / (c * Pm * c + R)          Kalman gain
-xhp = xhm + K * (y[i] - yhm)             posterior state
-Pp  = (1-K*c)*Pm*(1-K*c) + K*R*K         posterior covariance (Joseph form)
+K   = Pm * c / (c * Pm * c + R)
+xhp = xhm + K * (y[i] - yhm)
+Pp  = (1-K*c)*Pm*(1-K*c) + K*R*K    (Joseph form)
 ```
 
-**Step 2 — Time update (predict next step):**
+**Time update:**
 
 ```
 xhm = a * xhp + b * u[i]
@@ -88,38 +99,33 @@ Pm  = a * Pp * a + Q
 yhm = c * xhm
 ```
 
-#### Concrete walk-through (step i=0)
-
-Given `xhm=0, Pm=2.44e-4, y[0]=0.05, u[0]=1`:
+#### Numerical example (i=0, a=0.95, c=1, P0=2.44e-4, R=1e-4, y[0]=0.05, u[0]=1)
 
 ```
-K   = 2.44e-4 * 1 / (1 * 2.44e-4 * 1 + 1e-4) = 2.44e-4 / 3.44e-4 = 0.709
-xhp = 0 + 0.709 * (0.05 - 0)                  = 0.0355
-Pp  = (1-0.709)^2 * 2.44e-4 + 0.709^2 * 1e-4  = 2.07e-5 + 5.03e-5 = 7.1e-5
-xhm = 0.95 * 0.0355 + 0.05 * 1                 = 0.0837  (next step prior)
-Pm  = 0.95^2 * 7.1e-5 + 2.44e-4                = 6.41e-5 + 2.44e-4 = 3.08e-4
+K   = 2.44e-4 / (2.44e-4 + 1e-4)  = 0.709
+xhp = 0 + 0.709 * (0.05 - 0)      = 0.0355
+Pp  = (1-0.709)^2 * 2.44e-4 + 0.709^2 * 1e-4 = 7.1e-5
+xhm = 0.95 * 0.0355 + 0.05 * 1    = 0.0837
+Pm  = 0.95^2 * 7.1e-5 + 2.44e-4   = 3.08e-4
 ```
 
-K ≈ 0.71 means the filter trusts the measurement more than the prediction (R < Pm).  
-After the update Pp drops from 2.44e-4 to 7.1e-5 — uncertainty reduced by 3×.
+K = 0.71 means the filter trusts the measurement more than the prediction (R < Pm).
+Pp drops from 2.44e-4 to 7.1e-5 — uncertainty reduced by 3x after the update.
 
 ---
 
 ## Extended Kalman Filter Algorithm (EKF)
 
-The EKF handles nonlinear functions by replacing them with their first-order
-Taylor (Jacobian) approximations evaluated at the current estimate.
+Replaces constant Jacobians with ones computed at the current estimate each step.
 
-### Jacobians
-
-| Jacobian | Formula | Where evaluated |
-|----------|---------|-----------------|
-| `H`  (measurement)         | `c * cos(c * xhm + phi_h)` | at `xhm` (before measurement update) |
-| `Phi` (state transition)   | `a * cos(xhp + phi_f)`     | at `xhp` (after measurement update)  |
+| Jacobian | Formula | Evaluated at |
+|----------|---------|--------------|
+| `H`  (measurement)       | `c * cos(c * xhm + phi_h)` | `xhm` (before update) |
+| `Phi` (state transition) | `a * cos(xhp + phi_f)`     | `xhp` (after update)  |
 
 ### One cycle
 
-**Step 1 — Measurement update:**
+**Measurement update:**
 
 ```
 H   = c * cos(c * xhm + phi_h)
@@ -128,94 +134,113 @@ xhp = xhm + K * (y[i] - yhm)
 Pp  = (1-K*H)*Pm*(1-K*H) + K*R*K
 ```
 
-**Step 2 — Time update:**
+**Time update:**
 
 ```
-xhm = a * sin(xhp + phi_f) + b * u[i]    (nonlinear propagation)
-Phi = a * cos(xhp + phi_f)               (linearized covariance propagation)
+Phi = a * cos(xhp + phi_f)
+xhm = a * sin(xhp + phi_f) + b * u[i]
 Pm  = Phi * Pp * Phi + Q
 yhm = sin(c * xhm + phi_h)
 ```
 
-#### Concrete walk-through (step i=0)
-
-Given `c=10, a=0.95, xhm=0.0, Pm=2.44e-4, y[0]=0.4, u[0]=1, R=0.01`:
+#### Numerical example (i=0, c=10, P0=2.44e-4, R=0.01, xhm=0, y[0]=0.4, u[0]=1)
 
 ```
-H   = 10 * cos(10 * 0.0 + 0) = 10 * cos(0) = 10.0
-K   = 2.44e-4 * 10 / (10 * 2.44e-4 * 10 + 0.01) = 2.44e-3 / (2.44e-2 + 0.01) = 0.0718
-xhp = 0.0 + 0.0718 * (0.4 - sin(0)) = 0.0287
-Pp  = (1 - 0.0718*10)^2 * 2.44e-4 + 0.0718^2 * 0.01 = 4.3e-5 + 5.15e-5 ≈ 9.5e-5
-Phi = 0.95 * cos(0.0287 + 0) ≈ 0.9496
-xhm = 0.95 * sin(0.0287) + 0.05 * 1 ≈ 0.0272 + 0.05 = 0.0772
-Pm  = 0.9496^2 * 9.5e-5 + 2.44e-4 ≈ 8.57e-5 + 2.44e-4 = 3.3e-4
-```
-
-With `c=10`, the measurement Jacobian H=10 amplifies the innovation significantly —
-the filter sees the measurement as very informative about x.
-
----
-
-## Using the classes directly
-
-```python
-from KF import KalmanFilter, simulate_linear
-
-# Simulate data
-u, x, y, params = simulate_linear(n=200, seed=0)
-
-# Create and run filter
-kf = KalmanFilter(a=params['a'], b=params['b'], c=params['c'],
-                  Q=params['Q'], R=params['R'],
-                  x0=params['x0'], P0=params['P0'])
-results = kf.run(y, u)
-
-# results is a dict with keys: XHM, YHM, XHP, K, Pm, Pp (each np.ndarray of shape (n,))
-print(results['XHP'])   # posterior state estimates
-```
-
-```python
-from EKF import ExtendedKalmanFilter, simulate_nonlinear
-
-u, x, y, params = simulate_nonlinear(n=200, seed=0)
-
-ekf = ExtendedKalmanFilter(a=params['a'], b=params['b'], c=params['c'],
-                           Q=params['Q'], R=params['R'],
-                           phi_f=params['phi_f'], phi_h=params['phi_h'],
-                           x0=params['x0'], P0=params['P0'])
-
-# Run step by step
-ekf.reset()
-for i in range(len(y)):
-    r = ekf.step(y[i], u[i])
-    print(f"i={i}  xhm={r['xhm']:.4f}  K={r['K']:.4f}  xhp={r['xhp']:.4f}")
+H   = 10 * cos(0) = 10.0
+K   = 2.44e-4 * 10 / (10 * 2.44e-4 * 10 + 0.01) = 0.0718
+xhp = 0 + 0.0718 * (0.4 - 0) = 0.0287
+Pp  = (1 - 0.718)^2 * 2.44e-4 + 0.0718^2 * 0.01 = 9.5e-5
+Phi = 0.95 * cos(0.0287) = 0.9496
+xhm = 0.95 * sin(0.0287) + 0.05 = 0.0772
+Pm  = 0.9496^2 * 9.5e-5 + 2.44e-4 = 3.3e-4
 ```
 
 ---
 
-## Output files
+## Unscented Kalman Filter Algorithm (UKF)
 
-After running, `results/` contains:
+Avoids Jacobians by propagating 3 sigma points through the exact nonlinear functions.
+
+### Parameters (alpha=1, kappa=2, beta=0, n_state=1)
+
+```
+lambda = alpha^2 * (n_state + kappa) - n_state = 2
+scale  = n_state + lambda = 3
+
+Sigma points:  X[0] = xhm
+               X[1] = xhm + sqrt(scale * Pm)
+               X[2] = xhm - sqrt(scale * Pm)
+
+Weights:  Wm[0] = 2/3,  Wm[1] = Wm[2] = 1/6
+          Wc[0] = 2/3,  Wc[1] = Wc[2] = 1/6
+```
+
+### One cycle
+
+**Measurement update:**
+
+```
+X_sigma = sigma_points(xhm, Pm)
+Y_sigma = sin(c * X_sigma + phi_h)
+
+z_hat = sum(Wm * Y_sigma)
+S     = R + sum(Wc * (Y_sigma - z_hat)^2)
+Cxy   = sum(Wc * (X_sigma - xhm) * (Y_sigma - z_hat))
+
+K   = Cxy / S
+xhp = xhm + K * (y[i] - z_hat)
+Pp  = Pm - K * S * K
+```
+
+**Time update:**
+
+```
+X_sigma = sigma_points(xhp, Pp)
+X_next  = a * sin(X_sigma + phi_f) + b * u[i]
+
+xhm = sum(Wm * X_next)
+Pm  = Q + sum(Wc * (X_next - xhm)^2)
+```
+
+#### Numerical example (i=0, c=10, xhm=0, Pm=2.44e-4, R=0.01)
+
+```
+X_sigma = [0.0,  +0.02708,  -0.02708]
+Y_sigma = sin(10 * X_sigma) = [0.0,  0.2703,  -0.2703]
+
+z_hat = 0.0
+S     = 0.01 + 2*(1/6)*0.2703^2 = 0.0344
+Cxy   = 2*(1/6)*0.02708*0.2703  = 0.00244
+K     = 0.00244 / 0.0344        = 0.0710
+```
+
+---
+
+## KF vs EKF vs UKF comparison
+
+| Aspect | KF | EKF | UKF |
+|--------|-----|-----|-----|
+| State transition | `a * xhp` (linear) | `a * sin(xhp + phi_f)` | `a * sin(xhp + phi_f)` |
+| Measurement function | `c * xhm` (linear) | `sin(c * xhm + phi_h)` | `sin(c * xhm + phi_h)` |
+| Covariance propagation | Exact (Phi = a, constant) | 1st-order Jacobian | Unscented transform |
+| Jacobians needed | Yes (trivially constant) | Yes (derived analytically) | No |
+| Accuracy | Optimal for linear + Gaussian | Degrades with strong nonlinearity | Better than EKF for highly nonlinear systems |
+
+---
+
+## Output files (`results/`)
 
 | File | Content |
 |------|---------|
-| `kf_simulation.png`  | Input u, true state x, measurement y |
-| `kf_estimates.png`   | x vs XHM/XHP, prior/posterior errors, innovations |
-| `kf_gains.png`       | Kalman gain K, covariances Pm and Pp over time |
-| `kf_results.txt`     | Mean, Std, RMSE of ytm, xtm, xtp |
-| `ekf_simulation.png` | Same plots for the nonlinear system |
-| `ekf_estimates.png`  | EKF state estimates and residuals |
-| `ekf_gains.png`      | EKF gain K and covariances |
-| `ekf_results.txt`    | EKF residual statistics |
-
----
-
-## Key differences: KF vs EKF
-
-| Aspect | KF | EKF |
-|--------|-----|-----|
-| State transition | `a * xhp` (linear) | `a * sin(xhp + phi_f)` (nonlinear) |
-| Measurement function | `c * xhm` (linear) | `sin(c * xhm + phi_h)` (nonlinear) |
-| Covariance propagation | exact (`Phi = a` constant) | approximate (`Phi = a*cos(xhp+phi_f)` varies) |
-| Measurement update | H = c (constant) | H = c*cos(c*xhm+phi_h) (varies per step) |
-| Accuracy | Optimal for Gaussian linear systems | Approximate; degrades with strong nonlinearity |
+| `ex1_whiteness.png` | Autocorrelation — 4 panels: KF, EKF, UKF, KF mismatch |
+| `ex1_whiteness.txt` | Chi-squared p-values and whiteness verdict |
+| `ex2_normality.png` | Q-Q plots — 3 panels: KF, EKF, UKF |
+| `ex2_normality.txt` | Shapiro-Wilk W and p-values |
+| `ex3_noise_types.png` | 2x4 grid: autocorrelation + Q-Q for 4 noise combinations |
+| `ex3_noise_types.txt` | p_white and p_normal for each noise type |
+| `ex4_n_effect.png` | Autocorrelation + histogram for N = 10, 100, 1000, 10000 |
+| `ex4_n_effect.txt` | RMSE, p-value, CI width for each N |
+| `ex5_ekf_states.png`      | x state estimates: true x, XHM, XHP, innovations |
+| `ex5_ekf_parameter.png`   | parameter a convergence + variance on a over time |
+| `ex5_ekf_gains.png`       | Kalman gains K[0], K[1] and diagonal covariances  |
+| `ex5_ekf_results.txt`     | Final a estimate, error, Pm[1,1], method summary  |
