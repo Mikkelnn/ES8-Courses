@@ -22,9 +22,28 @@ FIELDS = [
 def find_port():
     if len(sys.argv) > 1:
         return sys.argv[1]
+
+    # Check for Arduino-like devices
     for p in serial.tools.list_ports.comports():
-        if 'ACM' in p.device or 'USB' in p.device:
+        dev = p.device.lower()
+        desc = (p.description or '').lower()
+
+        # Linux: /dev/ttyACM*, /dev/ttyUSB*, /dev/ttyAMA*
+        if any(x in dev for x in ['acm', 'usb', 'ama']):
             return p.device
+
+        # Windows: COM*
+        if dev.startswith('com') and dev[3:].isdigit():
+            return p.device
+
+        # macOS: /dev/tty.usbserial*, /dev/tty.SLAB_USBtoUART, Arduino
+        if any(x in dev for x in ['usbserial', 'usbmodem']):
+            return p.device
+
+        # Check description for Arduino mentions
+        if 'arduino' in desc or 'usb' in desc:
+            return p.device
+
     return '/dev/ttyACM0'
 
 
@@ -150,10 +169,10 @@ def animate(_):
         patch.remove()
     ekf_hi = ekf_v + 2 * ekf_sv
     ekf_lo = ekf_v - 2 * ekf_sv
-    ax_v.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue')
+    ax_v.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue', edgecolor='none')
     ekfb_hi = ekfb_v + 2 * ekfb_sv
     ekfb_lo = ekfb_v - 2 * ekfb_sv
-    ax_v.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red')
+    ax_v.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red', edgecolor='none')
 
     ax_v.relim()
     ax_v.autoscale_view()
@@ -168,10 +187,10 @@ def animate(_):
         patch.remove()
     ekf_hi = ekf_p + 2 * ekf_sp
     ekf_lo = ekf_p - 2 * ekf_sp
-    ax_p.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue')
+    ax_p.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue', edgecolor='none')
     ekfb_hi = ekfb_p + 2 * ekfb_sp
     ekfb_lo = ekfb_p - 2 * ekfb_sp
-    ax_p.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red')
+    ax_p.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red', edgecolor='none')
 
     ax_p.relim()
     ax_p.autoscale_view()

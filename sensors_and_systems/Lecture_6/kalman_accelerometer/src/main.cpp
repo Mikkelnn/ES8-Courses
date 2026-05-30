@@ -69,6 +69,7 @@ Matrix<1, 4> H_ekfb;
 
 void initializeEKF()
 {
+    // Jacobian F = Phi (linear system, constant)
     Phi_ekf.Fill(0);
     Phi_ekf(0, 0) = phi;
     Phi_ekf(1, 0) = Ts;
@@ -79,9 +80,11 @@ void initializeEKF()
     Q_ekf.Fill(0);
     Q_ekf(0, 0) = sigma_qa * sigma_qa;
 
+    // Jacobian H (linear measurement, constant)
     H_ekf.Fill(0);
     H_ekf(0, 0) = 1.0f;
 
+    // Jacobian F = Phi (linear system, constant)
     Phi_ekfb.Fill(0);
     Phi_ekfb(0, 0) = phi;
     Phi_ekfb(1, 0) = Ts;
@@ -94,6 +97,7 @@ void initializeEKF()
     Q_ekfb(0, 0) = sigma_qa * sigma_qa;
     Q_ekfb(3, 3) = sigma_qb * sigma_qb;
 
+    // Jacobian H (linear measurement, constant)
     H_ekfb.Fill(0);
     H_ekfb(0, 0) = 1.0f;
     H_ekfb(0, 3) = 1.0f;
@@ -101,6 +105,7 @@ void initializeEKF()
 
 void ekfUpdate(float z_meas)
 {
+    // Linear system: F = Phi, H constant
     Matrix<3, 1> x_pred = Phi_ekf * x_ekf;
     Matrix<3, 3> P_pred = Phi_ekf * P_ekf * ~Phi_ekf + Q_ekf;
 
@@ -121,6 +126,7 @@ void ekfUpdate(float z_meas)
 
 void ekfUpdateBias(float z_meas)
 {
+    // Linear system: F = Phi, H constant
     Matrix<4, 1> x_pred = Phi_ekfb * x_ekfb;
     Matrix<4, 4> P_pred = Phi_ekfb * P_ekfb * ~Phi_ekfb + Q_ekfb;
 
