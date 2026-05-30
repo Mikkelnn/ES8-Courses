@@ -23,27 +23,39 @@ Then open `trilateration_gps_ble_solutions.ipynb` in VS Code or Jupyter and run 
 
 Let
 
-$$r = R_E + h.$$
+$$
+r = R_E + h.
+$$
 
 The shortest satellite-receiver distance occurs when the satellite is directly overhead:
 
-$$d_{\min} = R_s - r = R_s - R_E - h.$$
+$$
+d_{\min} = R_s - r = R_s - R_E - h.
+$$
 
 The longest visible distance occurs at the tangent line of sight:
 
-$$d_{\max} = \sqrt{R_s^2 - R_E^2} + \sqrt{r^2 - R_E^2}.$$
+$$
+d_{\max} = \sqrt{R_s^2 - R_E^2} + \sqrt{r^2 - R_E^2}.
+$$
 
 Equivalently, with
 
-$$\beta = \cos^{-1}\left({R_E \over R_s}\right), \quad \phi = \sin^{-1}\left({R_E \over r}\right), \quad \psi = \cos^{-1}\left({R_E \over r}\right),$$
+$$
+\beta = \cos^{-1}\left({R_E \over R_s}\right), \quad \phi = \sin^{-1}\left({R_E \over r}\right), \quad \psi = \cos^{-1}\left({R_E \over r}\right),
+$$
 
 we get
 
-$$d_{\max} = R_s {\sin(\psi + \beta) \over \sin \phi}.$$
+$$
+d_{\max} = R_s {\sin(\psi + \beta) \over \sin \phi}.
+$$
 
 The time of flight is
 
-$$t = {d \over c}.$$
+$$
+t = {d \over c}.
+$$
 
 For a nominal GPS radius $R_s = 26{,}600$ km and a receiver on the surface, the notebook gives approximately $67.48$ ms minimum and $86.15$ ms maximum.
 
@@ -51,29 +63,41 @@ For a nominal GPS radius $R_s = 26{,}600$ km and a receiver on the surface, the 
 
 The great-circle distance is computed with the haversine formula:
 
-$$D = 2R_E\sin^{-1}\left(\sqrt{\sin^2\left({\Delta\varphi \over 2}\right) + \cos\varphi_1\cos\varphi_2\sin^2\left({\Delta\lambda \over 2}\right)}\right).$$
+$$
+D = 2R_E\sin^{-1}\left(\sqrt{\sin^2\left({\Delta\varphi \over 2}\right) + \cos\varphi_1\cos\varphi_2\sin^2\left({\Delta\lambda \over 2}\right)}\right).
+$$
 
 Using CDG at approximately $(49.0097^\circ, 2.5479^\circ)$ and GIG at approximately $(-22.8100^\circ, -43.2506^\circ)$ gives
 
-$$D \approx 9184 \text{ km}.$$
+$$
+D \approx 9184 \text{ km}.
+$$
 
 For a scheduled flight time of $11.5$ h,
 
-$$v = {D \over 11.5 \text{ h}} \approx 799 \text{ km/h}.$$
+$$
+v = {D \over 11.5 \text{ h}} \approx 799 \text{ km/h}.
+$$
 
 The Earth rotates, using a 24-hour day as in the exercise answer,
 
-$$360^\circ {11.5 \over 24} = 172.5^\circ.$$
+$$
+360^\circ {11.5 \over 24} = 172.5^\circ.
+$$
 
 ## Exercise 3 — Blewitt design matrix
 
 The ideal pseudorange model is
 
-$$P_j = \rho_j(x,y,z) + c\tau - c\tau_j,$$
+$$
+P_j = \rho_j(x,y,z) + c\tau - c\tau_j,
+$$
 
 where
 
-$$\rho_j = \sqrt{(x^j-x)^2 + (y^j-y)^2 + (z^j-z)^2}.$$
+$$
+\rho_j = \sqrt{(x^j-x)^2 + (y^j-y)^2 + (z^j-z)^2}.
+$$
 
 At provisional receiver coordinates $(x_0,y_0,z_0)$, row $j$ of the design matrix is
 
@@ -87,23 +111,33 @@ The notebook verifies this by comparing the analytic matrix against central fini
 
 The log-distance RSSI model is
 
-$$RSSI_i = A_i - 10\gamma\log_{10}(d_i).$$
+$$
+RSSI_i = A_i - 10\gamma\log_{10}(d_i).
+$$
 
 The inverse distance estimate is
 
-$$\hat d_i = 10^{(A_i - RSSI_i)/(10\gamma)}.$$
+$$
+\hat d_i = 10^{(A_i - RSSI_i)/(10\gamma)}.
+$$
 
 Given beacons $b_i = (x_i,y_i)$ and candidate receiver position $p=(x,y)$,
 
-$$r_i(p)=\sqrt{(x-x_i)^2+(y-y_i)^2}.$$
+$$
+r_i(p)=\sqrt{(x-x_i)^2+(y-y_i)^2}.
+$$
 
 The optimization problem is
 
-$$\min_{x,y}\sum_i \left(r_i(x,y)-\hat d_i\right)^2.$$
+$$
+\min_{x,y}\sum_i \left(r_i(x,y)-\hat d_i\right)^2.
+$$
 
 The exercise specifies $\gamma=1.74$ and $f=2.45$ GHz. Because no measured beacon power $A_i$ is provided, the notebook computes a default value from free-space path loss at $1$ m:
 
-$$A = -10\gamma\log_{10}\left({4\pi f \over c}\right).$$
+$$
+A = -10\gamma\log_{10}\left({4\pi f \over c}\right).
+$$
 
 The simulated room is $5 \times 10$ m with beacons at all four corners. The notebook includes a single-position example plus a Monte Carlo noise test.
 
