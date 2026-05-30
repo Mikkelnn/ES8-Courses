@@ -13,89 +13,95 @@ This folder contains a Python/Jupyter solution for the seven LiDAR exercises.
 
 For a single scatterer, the simplified LiDAR equation is
 
-```text
-P_R / P_T = (rho * A_s * D_r^2 * eta_atm * eta_sys) / (R^4 * beta_t^2 * Omega)
-```
+$$
+\frac{P_R}{P_T} = \frac{\rho A_s D_r^2 \eta_{\mathrm{atm}} \eta_{\mathrm{sys}}}{R^4 \beta_t^2 \Omega}
+$$
 
-where `beta_t = tan(phi)`. Using the exercise values:
+where $\beta_t = \tan(\phi)$. Using the exercise values:
 
-```text
-R = 150 m
-phi = 3 mrad
-D_r = 0.15 m
-A_s = 0.17 m^2
-rho = 0.2
-Omega = 0.5 sr
-eta_atm = 0.9
-eta_sys = 0.9
-```
+$$
+\begin{aligned}
+R &= 150\,\mathrm{m} \\
+\phi &= 3\,\mathrm{mrad} \\
+D_r &= 0.15\,\mathrm{m} \\
+A_s &= 0.17\,\mathrm{m}^2 \\
+\rho &= 0.2 \\
+\Omega &= 0.5\,\mathrm{sr} \\
+\eta_{\mathrm{atm}} &= 0.9 \\
+\eta_{\mathrm{sys}} &= 0.9
+\end{aligned}
+$$
 
 gives
 
-```text
-P_R / P_T ≈ 2.7e-7
-```
+$$
+\frac{P_R}{P_T} \approx 2.7 \times 10^{-7}
+$$
 
-This is the same order as the expected answer in the exercise statement, approximately `2.6e-7`; the small difference is due to rounding and using `tan(phi)` rather than `phi` directly.
+This is the same order as the expected answer in the exercise statement, approximately $2.6 \times 10^{-7}$; the small difference is due to rounding and using $\tan(\phi)$ rather than $\phi$ directly.
 
 ### 2. Best straight-line fit
 
 The line is represented implicitly:
 
-```text
-a*x + b*y + c = 0, with a^2 + b^2 = 1
-```
+$$
+a x + b y + c = 0, \qquad a^2 + b^2 = 1
+$$
 
 The optimization problem is
 
-```text
-minimize sum_i (a*x_i + b*y_i + c)^2
-subject to a^2 + b^2 = 1
-```
+$$
+\begin{aligned}
+\text{minimize} \quad & \sum_i (a x_i + b y_i + c)^2 \\
+\text{subject to} \quad & a^2 + b^2 = 1
+\end{aligned}
+$$
 
-Because `(a,b)` is a unit normal vector, each residual is a perpendicular distance. This handles vertical and non-vertical lines. The notebook solves it with total least squares using SVD/PCA.
+Because $(a,b)$ is a unit normal vector, each residual is a perpendicular distance. This handles vertical and non-vertical lines. The notebook solves it with total least squares using SVD/PCA.
 
 ### 3. Line-circle intersection
 
 The line through two points is written as
 
-```text
-p(t) = p1 + t*(p2 - p1)
-```
+$$
+\mathbf{p}(t) = \mathbf{p}_1 + t(\mathbf{p}_2 - \mathbf{p}_1)
+$$
 
 The circle is
 
-```text
-||p(t) - center||^2 = radius^2
-```
+$$
+\lVert \mathbf{p}(t) - \mathbf{c} \rVert^2 = r^2
+$$
 
-Substitution gives a quadratic in `t`. The discriminant determines whether there are zero, one, or two intersections.
+Substitution gives a quadratic in $t$. The discriminant determines whether there are zero, one, or two intersections.
 
 ### 4–7. 2D LiDAR simulation
 
 A LiDAR beam is modeled as a ray:
 
-```text
-p(t) = origin + t*[cos(theta), sin(theta)], t >= 0
-```
+$$
+\mathbf{p}(t) = \mathbf{o} + t[\cos(\theta), \sin(\theta)], \qquad t \geq 0
+$$
 
 For each beam, the simulator computes intersections with the circular robot and the wall segment, then keeps the closest positive intersection. Measurement noise is added as
 
-```text
-r_noisy = r + N(0, sigma_r^2)
-theta_noisy = theta + N(0, sigma_theta^2)
-```
+$$
+\begin{aligned}
+r_{\mathrm{noisy}} &= r + \mathcal{N}(0, \sigma_r^2) \\
+\theta_{\mathrm{noisy}} &= \theta + \mathcal{N}(0, \sigma_\theta^2)
+\end{aligned}
+$$
 
 The robot is modeled as a circle in top view, equivalent to a horizontal slice of a cylinder.
 
 ## Results and conclusions
 
-1. The LiDAR power ratio is very small: about `2.7e-7`. This demonstrates the strong effect of range, beam divergence, receiver aperture, target reflectance, and transmission efficiencies.
+1. The LiDAR power ratio is very small: about $2.7 \times 10^{-7}$. This demonstrates the strong effect of range, beam divergence, receiver aperture, target reflectance, and transmission efficiencies.
 2. The total least-squares line fit works for arbitrary line orientations, including vertical walls.
 3. The line-circle intersection function correctly returns two intersections, one tangent point, or no points depending on line geometry.
 4. The robot-only point cloud forms an arc on the visible side of the cylindrical robot.
 5. With a wall behind the robot, the robot occludes central wall returns; side beams still reach the wall.
-6. The wall cluster fit recovers a line close to the true wall at `x = 5 m`; the notebook reports the fitted equation and RMSE.
+6. The wall cluster fit recovers a line close to the true wall at $x = 5\,\mathrm{m}$; the notebook reports the fitted equation and RMSE.
 7. Moving the robot changes the robot returns and the wall occlusion gap, while the wall fit remains stable when enough wall points are visible.
 
 ## How to run
