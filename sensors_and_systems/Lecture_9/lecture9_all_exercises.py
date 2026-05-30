@@ -7,7 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from scipy.signal import square as square_wave
-from scipy.stats import chi2 as chi2_dist, norm as norm_dist, probplot, shapiro
+from scipy.stats import chi2 as chi2_dist, norm as norm_dist
+from normplot import plot_normplot_panel
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -401,25 +402,6 @@ def run_exercise_1(seed=42):
 # Exercise 2 — Normality Test
 # =============================================================================
 
-def plot_qq_normality_panel(ax, data, panel_title):
-    # Q-Q plot vs standard normal + Shapiro-Wilk test; p>0.05 means data is Gaussian
-    (theoretical_quantiles, sample_quantiles), (slope, intercept, _) = \
-        probplot(data, dist='norm', plot=None)
-
-    ax.plot(theoretical_quantiles, sample_quantiles,
-            'o', markersize=3, color='steelblue', label='data')
-    ax.plot(theoretical_quantiles, slope * theoretical_quantiles + intercept,
-            'r-', lw=1.5, label='normal fit')
-    ax.set_xlabel('Theoretical quantiles')
-    ax.set_ylabel('Sample quantiles')
-    ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
-
-    shapiro_W, p_value = shapiro(data)
-    ax.set_title(f'{panel_title}\nShapiro-Wilk W={shapiro_W:.4f}  p={p_value:.4f}'
-                 f'  -> {"Normal" if p_value > 0.05 else "NOT Normal"}')
-    return shapiro_W, p_value
-
 
 def run_exercise_2(seed=42):
     # Normality test: KF on linear system gives Gaussian innovations; EKF/UKF may deviate
@@ -437,22 +419,25 @@ def run_exercise_2(seed=42):
     innovations_ukf   = y_nl - run_unscented_kalman_filter(y_nl, u_nl, p_nl)['YHM']
 
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle('Exercise 2 - Normal Q-Q Plot of Innovations', fontsize=13)
-    W_kf,  p_kf  = plot_qq_normality_panel(axs[0], innovations_kf,  'KF (linear system)')
-    W_ekf, p_ekf = plot_qq_normality_panel(axs[1], innovations_ekf, 'EKF (nonlinear, c=10)')
-    W_ukf, p_ukf = plot_qq_normality_panel(axs[2], innovations_ukf, 'UKF (nonlinear, c=10)')
+    fig.suptitle('Exercise 2 - Normality Test (normplot)', fontsize=13)
+    plot_normplot_panel(axs[0], innovations_kf,  'KF (linear system)')
+    plot_normplot_panel(axs[1], innovations_ekf, 'EKF (nonlinear, c=10)')
+    plot_normplot_panel(axs[2], innovations_ukf, 'UKF (nonlinear, c=10)')
     plt.tight_layout()
     fig.savefig(os.path.join(RESULTS_DIR, 'ex2_normality.png'), dpi=150)
 
     text_lines = [
         'Exercise 2 - Normality Test Results',
         '=' * 65,
-        f'{"Filter":<28} {"Shapiro-Wilk W":>16} {"p-value":>10} {"Normal?":>10}',
-        f'{"KF  (linear system)":<28} {W_kf:>16.4f} {p_kf:>10.4f} {"YES" if p_kf > 0.05 else "NO":>10}',
-        f'{"EKF (nonlinear system)":<28} {W_ekf:>16.4f} {p_ekf:>10.4f} {"YES" if p_ekf > 0.05 else "NO":>10}',
-        f'{"UKF (nonlinear system)":<28} {W_ukf:>16.4f} {p_ukf:>10.4f} {"YES" if p_ukf > 0.05 else "NO":>10}',
+        'Normality assessed visually via normplot — see ex2_normality.png.',
+        'Straight-line alignment = Gaussian innovations.',
         '',
-        'p > 0.05 -> innovations appear Gaussian.',
+        f'{"Filter":<28} {"mean(innov)":>12} {"std(innov)":>12}',
+        f'{"KF  (linear system)":<28} {np.mean(innovations_kf):>12.6f} {np.std(innovations_kf):>12.6f}',
+        f'{"EKF (nonlinear system)":<28} {np.mean(innovations_ekf):>12.6f} {np.std(innovations_ekf):>12.6f}',
+        f'{"UKF (nonlinear system)":<28} {np.mean(innovations_ukf):>12.6f} {np.std(innovations_ukf):>12.6f}',
+        '',
+        'KF innovations should be Gaussian (linear system + Gaussian noise).',
         'EKF linearization errors may cause deviations; UKF avoids linearization.',
     ]
     print('\n'.join(text_lines))
@@ -482,7 +467,9 @@ def run_exercise_3(seed=42):
     fig.suptitle('Exercise 3 - Uniform vs Normal Noise (KF)', fontsize=13)
 
     text_lines = ['Exercise 3 - Uniform vs Normal Noise', '=' * 65,
-                  f'{"Case":<28} {"p_white":>10}  {"p_normal (SW)":>14}']
+                  'Normality assessed visually via normplot — see ex3_noise_types.png.',
+                  '',
+                  f'{"Case":<28} {"p_white":>10}']
 
     for col, (label, use_normal_process, use_normal_measurement) in enumerate(noise_cases):
         x, y, u     = simulate_linear_system_with_noise_type(
@@ -500,23 +487,17 @@ def run_exercise_3(seed=42):
         axs[0, col].set_title(f'{label}\np_white={p_white:.3f}', fontsize=9)
         axs[0, col].grid(True, alpha=0.3)
 
-        # Normality: Q-Q plot + Shapiro-Wilk
-        (theoretical_q, sample_q), (slope, intercept, _) = probplot(innovations, dist='norm', plot=None)
-        _, p_normal = shapiro(innovations)
+        # Normality: normplot (visual, no test statistic)
+        plot_normplot_panel(axs[1, col], innovations, label)
 
-        axs[1, col].plot(theoretical_q, sample_q, 'o', markersize=3, color='steelblue')
-        axs[1, col].plot(theoretical_q, slope * theoretical_q + intercept, 'r-', lw=1)
-        axs[1, col].set_title(f'Q-Q plot\np_normal={p_normal:.3f}', fontsize=9)
-        axs[1, col].grid(True, alpha=0.3)
-
-        text_lines.append(f'{label:<28} {p_white:>10.4f}  {p_normal:>14.4f}')
-        print(f'  {label:<28}  p_white={p_white:.4f}  p_normal={p_normal:.4f}')
+        text_lines.append(f'{label:<28} {p_white:>10.4f}')
+        print(f'  {label:<28}  p_white={p_white:.4f}')
 
     plt.tight_layout()
     fig.savefig(os.path.join(RESULTS_DIR, 'ex3_noise_types.png'), dpi=150)
 
     text_lines += ['', 'Whiteness passes for all cases (KF is BLUE).',
-                   'Normality fails when uniform noise is present.']
+                   'Normality fails when uniform noise is present — visible as curved tails in normplot.']
     save_text_results('ex3_noise_types.txt', text_lines)
     plt.show()
 
@@ -584,7 +565,8 @@ def run_exercise_4(seed=42):
 # =============================================================================
 
 def run_ekf_for_parameter_estimation(measurement_y, input_u, p: SystemParams,
-                                      a0_initial_guess, sigma_a0, aa, sigma_wa):
+                                      a0_initial_guess, sigma_a0,
+                                      parameter_evolution_coefficient, parameter_drift_noise_std):
     # Augmented EKF: state = [x; a], jointly estimates system state and parameter a
     # State transition (bilinear -> needs EKF):
     #   x_next = a_hat * x_hat + b*u   (nonlinear in augmented state [x;a])
@@ -593,52 +575,59 @@ def run_ekf_for_parameter_estimation(measurement_y, input_u, p: SystemParams,
     #   y = c*x + v  ->  H = [c, 0]   (constant Jacobian)
     # Jacobian of state transition at posterior [xhp[0], xhp[1]]:
     #   Phi = [[a_hat, x_hat], [0, aa]]
-    N     = len(measurement_y)
-    H_vec = np.array([p.c, 0.0])                    # shape (2,) — constant measurement Jacobian
-    Q_aug = np.diag([p.Q, sigma_wa**2])             # 2x2 process noise (x, a)
+    num_time_steps              = len(measurement_y)
+    measurement_jacobian_vector = np.array([p.c, 0.0])                    # shape (2,) — constant measurement Jacobian
+    augmented_process_noise_cov = np.diag([p.Q, parameter_drift_noise_std**2])  # 2x2 process noise (x, a)
 
-    xhm = np.array([p.x0, a0_initial_guess])        # augmented prior state [x; a]
-    Pm  = np.diag([p.P0, sigma_a0**2])              # 2x2 initial covariance
+    augmented_prior_state       = np.array([p.x0, a0_initial_guess])      # augmented prior state [x; a]
+    prior_error_covariance      = np.diag([p.P0, sigma_a0**2])            # 2x2 initial covariance
 
-    XHM      = np.zeros((2, N))   # prior estimates: row0=x, row1=a
-    XHP      = np.zeros((2, N))   # posterior estimates
-    YHM      = np.zeros(N)        # predicted measurements
-    K_log    = np.zeros((2, N))   # Kalman gain (2x1 per step)
-    Pm_diag  = np.zeros((2, N))   # diagonal of prior covariance
-    Pp_diag  = np.zeros((2, N))   # diagonal of posterior covariance
+    augmented_prior_state_log       = np.zeros((2, num_time_steps))   # prior estimates: row0=x, row1=a
+    augmented_posterior_state_log   = np.zeros((2, num_time_steps))   # posterior estimates
+    predicted_measurement_log       = np.zeros(num_time_steps)        # predicted measurements
+    kalman_gain_vector_log          = np.zeros((2, num_time_steps))   # Kalman gain (2x1 per step)
+    prior_covariance_diagonal_log   = np.zeros((2, num_time_steps))   # diagonal of prior covariance
+    posterior_covariance_diagonal_log = np.zeros((2, num_time_steps)) # diagonal of posterior covariance
 
-    yhm = float(H_vec @ xhm)
+    predicted_measurement = float(measurement_jacobian_vector @ augmented_prior_state)
 
-    for i in range(N):
-        XHM[:, i]     = xhm
-        YHM[i]        = yhm
-        Pm_diag[:, i] = np.diag(Pm)
+    for i in range(num_time_steps):
+        augmented_prior_state_log[:, i]     = augmented_prior_state
+        predicted_measurement_log[i]        = predicted_measurement
+        prior_covariance_diagonal_log[:, i] = np.diag(prior_error_covariance)
 
         # Measurement update: S = H*Pm*H' + R,  K = Pm*H'/S
-        S   = float(H_vec @ Pm @ H_vec) + p.R
-        K   = (Pm @ H_vec) / S                      # shape (2,) — Kalman gain vector
-        xhp = xhm + K * (measurement_y[i] - yhm)
+        innovation_variance  = float(measurement_jacobian_vector @ prior_error_covariance @ measurement_jacobian_vector) + p.R
+        kalman_gain_vector   = (prior_error_covariance @ measurement_jacobian_vector) / innovation_variance  # shape (2,)
+        augmented_posterior_state = (augmented_prior_state
+                                     + kalman_gain_vector * (measurement_y[i] - predicted_measurement))
 
         # Joseph form: Pp = (I-KH)*Pm*(I-KH)' + R*(K*K')
-        KH          = np.outer(K, H_vec)             # (2,2)
-        I_minus_KH  = np.eye(2) - KH
-        Pp          = I_minus_KH @ Pm @ I_minus_KH.T + p.R * np.outer(K, K)
+        kalman_gain_times_jacobian = np.outer(kalman_gain_vector, measurement_jacobian_vector)  # (2,2)
+        innovation_weighting_matrix = np.eye(2) - kalman_gain_times_jacobian
+        posterior_error_covariance = (innovation_weighting_matrix @ prior_error_covariance @ innovation_weighting_matrix.T
+                                      + p.R * np.outer(kalman_gain_vector, kalman_gain_vector))
 
-        XHP[:, i]     = xhp
-        K_log[:, i]   = K
-        Pp_diag[:, i] = np.diag(Pp)
+        augmented_posterior_state_log[:, i]     = augmented_posterior_state
+        kalman_gain_vector_log[:, i]            = kalman_gain_vector
+        posterior_covariance_diagonal_log[:, i] = np.diag(posterior_error_covariance)
 
         # Time update: propagate nonlinearly, then compute EKF Jacobian Phi
-        x_hat = xhp[0]
-        a_hat = xhp[1]
-        xhm   = np.array([a_hat * x_hat + p.b * input_u[i],   # x_next = a*x + b*u
-                           aa * a_hat])                          # a_next = aa*a
-        Phi   = np.array([[a_hat, x_hat],                       # d(x_next)/d[x,a]
-                          [0.0,   aa]])                          # d(a_next)/d[x,a]
-        Pm    = Phi @ Pp @ Phi.T + Q_aug
-        yhm   = float(H_vec @ xhm)
+        state_estimate_x  = augmented_posterior_state[0]
+        parameter_estimate_a = augmented_posterior_state[1]
+        augmented_prior_state = np.array(
+            [parameter_estimate_a * state_estimate_x + p.b * input_u[i],   # x_next = a*x + b*u
+             parameter_evolution_coefficient * parameter_estimate_a])        # a_next = aa*a
+        state_transition_jacobian = np.array(
+            [[parameter_estimate_a, state_estimate_x],   # d(x_next)/d[x,a]
+             [0.0,                  parameter_evolution_coefficient]])        # d(a_next)/d[x,a]
+        prior_error_covariance = (state_transition_jacobian @ posterior_error_covariance
+                                  @ state_transition_jacobian.T + augmented_process_noise_cov)
+        predicted_measurement  = float(measurement_jacobian_vector @ augmented_prior_state)
 
-    return dict(XHM=XHM, XHP=XHP, YHM=YHM, K=K_log, Pm=Pm_diag, Pp=Pp_diag)
+    return dict(XHM=augmented_prior_state_log, XHP=augmented_posterior_state_log,
+                YHM=predicted_measurement_log, K=kalman_gain_vector_log,
+                Pm=prior_covariance_diagonal_log, Pp=posterior_covariance_diagonal_log)
 
 
 def run_exercise_5(seed=42):
@@ -647,50 +636,64 @@ def run_exercise_5(seed=42):
     print("Exercise 5 - EKF Joint State and Parameter Estimation")
     print("=" * 60)
 
-    p      = make_linear_params(n=100)
-    true_a = p.a
-    x, y, u = simulate_linear_system(p, seed=seed)
+    linear_system_params              = make_linear_params(n=100)
+    true_parameter_a                  = linear_system_params.a
+    true_state_sequence, measurement_sequence, input_sequence = simulate_linear_system(
+        linear_system_params, seed=seed)
 
     # Default case from MATLAB: aa=1, sigma_wa=0 (a is modelled as a constant)
     # The filter starts with a wrong guess a0=0.5 and must learn the true a=0.95
-    a0_initial_guess = 0.5
-    sigma_a0         = 0.1    # initial uncertainty on a
-    aa               = 1.0    # a(i) = 1*a(i-1): random walk with zero noise = constant
-    sigma_wa         = 0.0    # no drift on parameter
+    a0_initial_guess             = 0.5
+    initial_uncertainty_on_a     = 0.1    # initial uncertainty on a
+    parameter_evolution_coeff    = 1.0    # a(i) = 1*a(i-1): random walk with zero noise = constant
+    parameter_drift_noise_std    = 0.0    # no drift on parameter
 
-    res = run_ekf_for_parameter_estimation(y, u, p, a0_initial_guess, sigma_a0, aa, sigma_wa)
+    ekf_param_estimation_result = run_ekf_for_parameter_estimation(
+        measurement_sequence, input_sequence, linear_system_params,
+        a0_initial_guess, initial_uncertainty_on_a,
+        parameter_evolution_coeff, parameter_drift_noise_std)
 
-    x_prior_est  = res['XHM'][0, :]
-    a_prior_est  = res['XHM'][1, :]
-    x_post_est   = res['XHP'][0, :]
-    innovations  = y - res['YHM']
+    state_prior_estimate_sequence     = ekf_param_estimation_result['XHM'][0, :]
+    parameter_prior_estimate_sequence = ekf_param_estimation_result['XHM'][1, :]
+    state_posterior_estimate_sequence = ekf_param_estimation_result['XHP'][0, :]
+    innovation_sequence               = measurement_sequence - ekf_param_estimation_result['YHM']
 
-    print(f'  True a:           {true_a:.5f}')
+    print(f'  True a:           {true_parameter_a:.5f}')
     print(f'  Initial guess a0: {a0_initial_guess:.5f}')
-    print(f'  Final estimate a: {a_prior_est[-1]:.5f}')
-    print(f'  Final error:      {abs(a_prior_est[-1] - true_a):.5f}')
+    print(f'  Final estimate a: {parameter_prior_estimate_sequence[-1]:.5f}')
+    print(f'  Final error:      {abs(parameter_prior_estimate_sequence[-1] - true_parameter_a):.5f}')
+
+    time_step_axis = np.arange(linear_system_params.n)
 
     # Figure 1: state estimates and innovations (mirrors MATLAB figure 2)
     fig1, axs = plt.subplots(2, 2, figsize=(12, 8))
     fig1.suptitle('Exercise 5 - EKF Parameter Estimation: State Estimates', fontsize=13)
 
-    axs[0, 0].plot(x, label='true x')
-    axs[0, 0].plot(x_prior_est, '--', label='XHM[x]')
-    axs[0, 0].plot(x_post_est,  ':',  label='XHP[x]')
-    axs[0, 0].set_title('x, XHM[x], XHP[x]')
+    axs[0, 0].plot(time_step_axis, true_state_sequence,             label='true x')
+    axs[0, 0].plot(time_step_axis, state_prior_estimate_sequence,   '--', label='prior estimate XHM[x]')
+    axs[0, 0].plot(time_step_axis, state_posterior_estimate_sequence, ':', label='posterior estimate XHP[x]')
+    axs[0, 0].set_title('State: true vs prior and posterior estimates')
+    axs[0, 0].set_xlabel('Time step k')
+    axs[0, 0].set_ylabel('State value x')
     axs[0, 0].legend(fontsize=8)
     axs[0, 0].grid(True, alpha=0.3)
 
-    axs[0, 1].plot(x - x_prior_est)
-    axs[0, 1].set_title('x - XHM[x]')
+    axs[0, 1].plot(time_step_axis, true_state_sequence - state_prior_estimate_sequence)
+    axs[0, 1].set_title('Prior state estimation error (x - XHM[x])')
+    axs[0, 1].set_xlabel('Time step k')
+    axs[0, 1].set_ylabel('State estimation error')
     axs[0, 1].grid(True, alpha=0.3)
 
-    axs[1, 0].plot(x - x_post_est)
-    axs[1, 0].set_title('x - XHP[x]')
+    axs[1, 0].plot(time_step_axis, true_state_sequence - state_posterior_estimate_sequence)
+    axs[1, 0].set_title('Posterior state estimation error (x - XHP[x])')
+    axs[1, 0].set_xlabel('Time step k')
+    axs[1, 0].set_ylabel('State estimation error')
     axs[1, 0].grid(True, alpha=0.3)
 
-    axs[1, 1].plot(innovations)
-    axs[1, 1].set_title('y - YHM (innovations)')
+    axs[1, 1].plot(time_step_axis, innovation_sequence)
+    axs[1, 1].set_title('Innovations (measurement - predicted measurement)')
+    axs[1, 1].set_xlabel('Time step k')
+    axs[1, 1].set_ylabel('Innovation y - ŷ')
     axs[1, 1].grid(True, alpha=0.3)
 
     plt.tight_layout()
@@ -700,15 +703,23 @@ def run_exercise_5(seed=42):
     fig2, axs = plt.subplots(1, 2, figsize=(12, 4))
     fig2.suptitle('Exercise 5 - Parameter a Estimate Convergence', fontsize=13)
 
-    axs[0].plot(a_prior_est, color='steelblue', label='estimated a (XHM[1])')
-    axs[0].axhline(true_a, color='k', linestyle='--', lw=2, label=f'true a = {true_a}')
-    axs[0].set_title('Parameter a estimate vs true a')
+    axs[0].plot(time_step_axis, parameter_prior_estimate_sequence,
+                color='steelblue', label='estimated a (prior)')
+    axs[0].axhline(true_parameter_a, color='k', linestyle='--', lw=2,
+                   label=f'true a = {true_parameter_a}')
+    axs[0].set_title('Parameter a: estimated vs true value')
+    axs[0].set_xlabel('Time step k')
+    axs[0].set_ylabel('Parameter a value')
     axs[0].legend(fontsize=8)
     axs[0].grid(True, alpha=0.3)
 
-    axs[1].plot(res['Pm'][1, :], label='Pm[1,1] prior var on a')
-    axs[1].plot(res['Pp'][1, :], '--', label='Pp[1,1] posterior var on a')
+    axs[1].plot(time_step_axis, ekf_param_estimation_result['Pm'][1, :],
+                label='Pm[1,1] prior variance on a')
+    axs[1].plot(time_step_axis, ekf_param_estimation_result['Pp'][1, :],
+                '--', label='Pp[1,1] posterior variance on a')
     axs[1].set_title('Variance of a estimate (shrinks as filter learns)')
+    axs[1].set_xlabel('Time step k')
+    axs[1].set_ylabel('Variance of parameter estimate')
     axs[1].legend(fontsize=8)
     axs[1].grid(True, alpha=0.3)
 
@@ -719,23 +730,31 @@ def run_exercise_5(seed=42):
     fig3, axs = plt.subplots(2, 2, figsize=(12, 8))
     fig3.suptitle('Exercise 5 - Kalman Gains and Covariances', fontsize=13)
 
-    axs[0, 0].plot(res['K'][0, :])
-    axs[0, 0].set_title('K[0] — gain applied to x')
+    axs[0, 0].plot(time_step_axis, ekf_param_estimation_result['K'][0, :])
+    axs[0, 0].set_title('Kalman gain K[0] — correction weight on state x')
+    axs[0, 0].set_xlabel('Time step k')
+    axs[0, 0].set_ylabel('Kalman gain K[0]')
     axs[0, 0].grid(True, alpha=0.3)
 
-    axs[0, 1].plot(res['K'][1, :])
-    axs[0, 1].set_title('K[1] — gain applied to a')
+    axs[0, 1].plot(time_step_axis, ekf_param_estimation_result['K'][1, :])
+    axs[0, 1].set_title('Kalman gain K[1] — correction weight on parameter a')
+    axs[0, 1].set_xlabel('Time step k')
+    axs[0, 1].set_ylabel('Kalman gain K[1]')
     axs[0, 1].grid(True, alpha=0.3)
 
-    axs[1, 0].plot(res['Pm'][0, :], label='x')
-    axs[1, 0].plot(res['Pm'][1, :], '--', label='a')
-    axs[1, 0].set_title('diag(Pm) — prior covariance')
+    axs[1, 0].plot(time_step_axis, ekf_param_estimation_result['Pm'][0, :], label='x')
+    axs[1, 0].plot(time_step_axis, ekf_param_estimation_result['Pm'][1, :], '--', label='a')
+    axs[1, 0].set_title('Prior covariance diag(Pm) for x and a')
+    axs[1, 0].set_xlabel('Time step k')
+    axs[1, 0].set_ylabel('Prior covariance')
     axs[1, 0].legend(fontsize=8)
     axs[1, 0].grid(True, alpha=0.3)
 
-    axs[1, 1].plot(res['Pp'][0, :], label='x')
-    axs[1, 1].plot(res['Pp'][1, :], '--', label='a')
-    axs[1, 1].set_title('diag(Pp) — posterior covariance')
+    axs[1, 1].plot(time_step_axis, ekf_param_estimation_result['Pp'][0, :], label='x')
+    axs[1, 1].plot(time_step_axis, ekf_param_estimation_result['Pp'][1, :], '--', label='a')
+    axs[1, 1].set_title('Posterior covariance diag(Pp) for x and a')
+    axs[1, 1].set_xlabel('Time step k')
+    axs[1, 1].set_ylabel('Posterior covariance')
     axs[1, 1].legend(fontsize=8)
     axs[1, 1].grid(True, alpha=0.3)
 
@@ -745,11 +764,11 @@ def run_exercise_5(seed=42):
     text_lines = [
         'Exercise 5 - EKF Joint State and Parameter Estimation',
         '=' * 60,
-        f'True a:              {true_a:.5f}',
+        f'True a:              {true_parameter_a:.5f}',
         f'Initial guess a0:    {a0_initial_guess:.5f}',
-        f'Final estimate a:    {a_prior_est[-1]:.5f}',
-        f'Final error |a-a*|:  {abs(a_prior_est[-1] - true_a):.5f}',
-        f'Final Pm[1,1]:       {res["Pm"][1, -1]:.5e}  (variance on a)',
+        f'Final estimate a:    {parameter_prior_estimate_sequence[-1]:.5f}',
+        f'Final error |a-a*|:  {abs(parameter_prior_estimate_sequence[-1] - true_parameter_a):.5f}',
+        f'Final Pm[1,1]:       {ekf_param_estimation_result["Pm"][1, -1]:.5e}  (variance on a)',
         '',
         'Method: augment state vector with parameter a -> [x; a]',
         '  x_next = a_hat * x_hat + b*u   bilinear in [x;a] -> EKF needed',
