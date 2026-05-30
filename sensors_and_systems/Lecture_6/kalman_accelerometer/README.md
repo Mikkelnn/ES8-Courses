@@ -221,3 +221,52 @@ Connect via Serial Monitor at 115200 baud.
 
 Plot each state with ±2σ bounds shaded. True position starts and ends at zero —
 use that as a visual sanity check on filter performance.
+
+---
+
+## Extended Kalman Filter (EKF) Implementation
+
+The code uses EKF structure with nonlinear state transition function **f(x)** and measurement function **h(x)**, along with their Jacobians **F** and **H**.
+
+### Model (from GroupRoomExercise.pdf §5)
+
+**State** `x = [a, v, p, b]ᵀ`
+
+**State transition** `x_{k+1} = f(x_k)`:
+```
+a_{k+1} = φ·a_k + w_a          [AR(1) acceleration]
+v_{k+1} = v_k + Tₛ·a_k + w_v   [Euler velocity]
+p_{k+1} = p_k + Tₛ·v_k + w_p   [Euler position]
+b_{k+1} = b_k + w_b             [random-walk bias]
+```
+
+**Measurement** `z_k = h(x_k) + v_k`:
+```
+z = a + b                        [raw accel = filtered + bias]
+```
+
+### EKF Cycle (Standard Algorithm)
+
+**Prediction** — advance state and covariance:
+```
+x̂⁻ = f(x̂)
+P⁻ = F·P·Fᵀ + Q    where F = ∂f/∂x
+```
+
+**Update** — apply measurement:
+```
+ν = z − h(x̂⁻)                     (innovation)
+S = H·P⁻·Hᵀ + R                   (innovation covariance)
+K = P⁻·Hᵀ·S⁻¹                     (Kalman gain)
+x̂ = x̂⁻ + K·ν                      (corrected state)
+P = (I − K·H)·P⁻                  (corrected covariance)
+```
+
+### Linear System Reduction
+
+This system is linear: `f(x) = Φ·x` and `h(x) = H·x`. Therefore:
+- Jacobian `F = Φ` is constant
+- Jacobian `H` is constant  
+- EKF becomes standard Kalman Filter in operation
+
+The EKF structure remains valid and shows how nonlinear filters generalize linear ones.
