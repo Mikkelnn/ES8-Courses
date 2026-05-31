@@ -1,9 +1,9 @@
 Exercise 1 - Whiteness Test Results
 ============================================================
 Case                                        p-value    White?
-Linear system + KF                           0.9400       YES
-Nonlinear system + EKF                       0.8457       YES
-Nonlinear system + UKF                       0.8263       YES
+Linear system + KF                           0.9480       YES
+Nonlinear system + EKF                       0.7602       YES
+Nonlinear system + UKF                       0.6491       YES
 Nonlinear system + KF (mismatch)             0.0000        NO
 
 p > 0.05 -> white innovations (well-tuned filter).

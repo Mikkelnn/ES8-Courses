@@ -1,12 +1,12 @@
 Exercise 3 - Uniform vs Normal Noise
 =================================================================
-Normality assessed visually via normplot — see ex3_noise_types.png.
+Normality assessed visually via normplot â€” see ex3_noise_types.png.
 
 Case                            p_white
-Normal w, Normal v               0.9400
-Uniform w, Normal v              0.1747
-Normal w, Uniform v              0.6526
-Uniform w, Uniform v             0.4583
+Normal w, Normal v               0.9480
+Uniform w, Normal v              0.2674
+Normal w, Uniform v              0.9102
+Uniform w, Uniform v             0.6617
 
 Whiteness passes for all cases (KF is BLUE).
-Normality fails when uniform noise is present — visible as curved tails in normplot.
+Normality fails when uniform noise is present â€” visible as curved tails in normplot.

@@ -463,7 +463,7 @@ def run_exercise_3(seed=42):
     ]
 
     p   = make_linear_params(n=100)
-    fig, axs = plt.subplots(2, 4, figsize=(18, 8))
+    fig, axs = plt.subplots(3, 4, figsize=(18, 10))
     fig.suptitle('Exercise 3 - Uniform vs Normal Noise (KF)', fontsize=13)
 
     text_lines = ['Exercise 3 - Uniform vs Normal Noise', '=' * 65,
@@ -489,6 +489,13 @@ def run_exercise_3(seed=42):
 
         # Normality: normplot (visual, no test statistic)
         plot_normplot_panel(axs[1, col], innovations, label)
+
+        # Histogram of residuals
+        axs[2, col].hist(innovations, bins=15, density=True, alpha=0.7, color='steelblue', edgecolor='black')
+        axs[2, col].set_xlabel('Residuals', fontsize=8)
+        axs[2, col].set_ylabel('Density', fontsize=8)
+        axs[2, col].set_title('Residual Distribution', fontsize=9)
+        axs[2, col].grid(True, alpha=0.3)
 
         text_lines.append(f'{label:<28} {p_white:>10.4f}')
         print(f'  {label:<28}  p_white={p_white:.4f}')
@@ -521,7 +528,7 @@ def run_exercise_4(seed=42):
                   f'{"N":>8} {"RMSE_innov":>12} {"RMSE_xtp":>12} {"p_white":>10} {"CI_width":>10}']
 
     for row, n in enumerate(N_values):
-        max_lag = min(24, max(3, n // 4))
+        max_lag = min(24, max(3, n // 10 ))
 
         p                    = make_linear_params(n=n)
         x, y, u              = simulate_linear_system(p, seed=seed)
@@ -787,7 +794,7 @@ def run_exercise_5(seed=42):
 # =============================================================================
 
 if __name__ == '__main__':
-    SEED = 42
+    SEED = 42069
     run_exercise_1(seed=SEED)
     run_exercise_2(seed=SEED)
     run_exercise_3(seed=SEED)

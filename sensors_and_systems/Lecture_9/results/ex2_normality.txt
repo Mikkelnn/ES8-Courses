@@ -1,12 +1,12 @@
 Exercise 2 - Normality Test Results
 =================================================================
-Normality assessed visually via normplot — see ex2_normality.png.
+Normality assessed visually via normplot â€” see ex2_normality.png.
 Straight-line alignment = Gaussian innovations.
 
 Filter                        mean(innov)   std(innov)
-KF  (linear system)             -0.000794     0.015724
-EKF (nonlinear system)          -0.019600     0.146449
-UKF (nonlinear system)          -0.019715     0.143992
+KF  (linear system)             -0.001094     0.018360
+EKF (nonlinear system)           0.015215     0.153938
+UKF (nonlinear system)           0.016389     0.151434
 
 KF innovations should be Gaussian (linear system + Gaussian noise).
 EKF linearization errors may cause deviations; UKF avoids linearization.

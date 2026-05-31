@@ -2,9 +2,9 @@ Exercise 5 - EKF Joint State and Parameter Estimation
 ============================================================
 True a:              0.95000
 Initial guess a0:    0.50000
-Final estimate a:    0.95186
-Final error |a-a*|:  0.00186
-Final Pm[1,1]:       1.80802e-05  (variance on a)
+Final estimate a:    0.94755
+Final error |a-a*|:  0.00245
+Final Pm[1,1]:       1.85072e-05  (variance on a)
 
 Method: augment state vector with parameter a -> [x; a]
   x_next = a_hat * x_hat + b*u   bilinear in [x;a] -> EKF needed
