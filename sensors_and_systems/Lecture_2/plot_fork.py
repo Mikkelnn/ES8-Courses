@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def f(x):
     if isinstance(x, np.ndarray):
         return np.array([f(xi) for xi in x])
-    
+
     if 0 < x <= 1:
         return (3 / 5) * x
     elif 1 < x <= 3:

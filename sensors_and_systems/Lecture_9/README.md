@@ -234,10 +234,10 @@ K     = 0.00244 / 0.0344        = 0.0710
 |------|---------|
 | `ex1_whiteness.png` | Autocorrelation — 4 panels: KF, EKF, UKF, KF mismatch |
 | `ex1_whiteness.txt` | Chi-squared p-values and whiteness verdict |
-| `ex2_normality.png` | Q-Q plots — 3 panels: KF, EKF, UKF |
-| `ex2_normality.txt` | Shapiro-Wilk W and p-values |
-| `ex3_noise_types.png` | 2x4 grid: autocorrelation + Q-Q for 4 noise combinations |
-| `ex3_noise_types.txt` | p_white and p_normal for each noise type |
+| `ex2_normality.png` | Normplots — 3 panels: KF, EKF, UKF |
+| `ex2_normality.txt` | mean and std of innovations for each filter |
+| `ex3_noise_types.png` | 2x4 grid: autocorrelation + normplot for 4 noise combinations |
+| `ex3_noise_types.txt` | p_white for each noise type |
 | `ex4_n_effect.png` | Autocorrelation + histogram for N = 10, 100, 1000, 10000 |
 | `ex4_n_effect.txt` | RMSE, p-value, CI width for each N |
 | `ex5_ekf_states.png`      | x state estimates: true x, XHM, XHP, innovations |

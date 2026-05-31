@@ -82,7 +82,11 @@ ax_a.grid(alpha=0.3)
 
 line_bench_v, = ax_v.plot([], [], color='tab:orange', lw=1.5, ls='--', label='bench')
 line_ekf_v, = ax_v.plot([], [], color='tab:blue', lw=1.6, label='EKF [a,v,p]')
+line_ekf_v_hi, = ax_v.plot([], [], color='tab:blue', lw=0.5, alpha=0.5)
+line_ekf_v_lo, = ax_v.plot([], [], color='tab:blue', lw=0.5, alpha=0.5)
 line_ekfb_v, = ax_v.plot([], [], color='tab:red', lw=1.6, label='EKF [a,v,p,b]')
+line_ekfb_v_hi, = ax_v.plot([], [], color='tab:red', lw=0.5, alpha=0.5)
+line_ekfb_v_lo, = ax_v.plot([], [], color='tab:red', lw=0.5, alpha=0.5)
 ax_v.set_title('Velocity')
 ax_v.set_xlabel('t [ms]')
 ax_v.set_ylabel('v [m/s]')
@@ -91,7 +95,11 @@ ax_v.grid(alpha=0.3)
 
 line_bench_p, = ax_p.plot([], [], color='tab:orange', lw=1.5, ls='--', label='bench')
 line_ekf_p, = ax_p.plot([], [], color='tab:blue', lw=1.6, label='EKF [a,v,p]')
+line_ekf_p_hi, = ax_p.plot([], [], color='tab:blue', lw=0.5, alpha=0.5)
+line_ekf_p_lo, = ax_p.plot([], [], color='tab:blue', lw=0.5, alpha=0.5)
 line_ekfb_p, = ax_p.plot([], [], color='tab:red', lw=1.6, label='EKF [a,v,p,b]')
+line_ekfb_p_hi, = ax_p.plot([], [], color='tab:red', lw=0.5, alpha=0.5)
+line_ekfb_p_lo, = ax_p.plot([], [], color='tab:red', lw=0.5, alpha=0.5)
 ax_p.set_title('Position')
 ax_p.set_xlabel('t [ms]')
 ax_p.set_ylabel('p [m]')
@@ -159,38 +167,32 @@ def animate(_):
     ax_a.relim()
     ax_a.autoscale_view()
 
-    # Update velocity lines and bands
+    # Update velocity lines and uncertainty bounds
     line_bench_v.set_data(t, bench_v)
     line_ekf_v.set_data(t, ekf_v)
     line_ekfb_v.set_data(t, ekfb_v)
 
-    # Remove old fill_between and create new ones
-    for patch in ax_v.patches[:]:
-        patch.remove()
-    ekf_hi = ekf_v + 2 * ekf_sv
-    ekf_lo = ekf_v - 2 * ekf_sv
-    ax_v.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue', edgecolor='none')
-    ekfb_hi = ekfb_v + 2 * ekfb_sv
-    ekfb_lo = ekfb_v - 2 * ekfb_sv
-    ax_v.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red', edgecolor='none')
+    ekf_sv = np.nan_to_num(ekf_sv, nan=0.0)
+    ekfb_sv = np.nan_to_num(ekfb_sv, nan=0.0)
+    line_ekf_v_hi.set_data(t, ekf_v + ekf_sv)
+    line_ekf_v_lo.set_data(t, ekf_v - ekf_sv)
+    line_ekfb_v_hi.set_data(t, ekfb_v + ekfb_sv)
+    line_ekfb_v_lo.set_data(t, ekfb_v - ekfb_sv)
 
     ax_v.relim()
     ax_v.autoscale_view()
 
-    # Update position lines and bands
+    # Update position lines and uncertainty bounds
     line_bench_p.set_data(t, bench_p)
     line_ekf_p.set_data(t, ekf_p)
     line_ekfb_p.set_data(t, ekfb_p)
 
-    # Remove old fill_between and create new ones
-    for patch in ax_p.patches[:]:
-        patch.remove()
-    ekf_hi = ekf_p + 2 * ekf_sp
-    ekf_lo = ekf_p - 2 * ekf_sp
-    ax_p.fill_between(t, ekf_lo, ekf_hi, alpha=0.15, color='tab:blue', edgecolor='none')
-    ekfb_hi = ekfb_p + 2 * ekfb_sp
-    ekfb_lo = ekfb_p - 2 * ekfb_sp
-    ax_p.fill_between(t, ekfb_lo, ekfb_hi, alpha=0.15, color='tab:red', edgecolor='none')
+    ekf_sp = np.nan_to_num(ekf_sp, nan=0.0)
+    ekfb_sp = np.nan_to_num(ekfb_sp, nan=0.0)
+    line_ekf_p_hi.set_data(t, ekf_p + ekf_sp)
+    line_ekf_p_lo.set_data(t, ekf_p - ekf_sp)
+    line_ekfb_p_hi.set_data(t, ekfb_p + ekfb_sp)
+    line_ekfb_p_lo.set_data(t, ekfb_p - ekfb_sp)
 
     ax_p.relim()
     ax_p.autoscale_view()
@@ -201,8 +203,8 @@ def animate(_):
     ax_b.autoscale_view()
 
     return [line_accel, line_ekf_a, line_ekfb_a,
-            line_bench_v, line_ekf_v, line_ekfb_v,
-            line_bench_p, line_ekf_p, line_ekfb_p,
+            line_bench_v, line_ekf_v, line_ekf_v_hi, line_ekf_v_lo, line_ekfb_v, line_ekfb_v_hi, line_ekfb_v_lo,
+            line_bench_p, line_ekf_p, line_ekf_p_hi, line_ekf_p_lo, line_ekfb_p, line_ekfb_p_hi, line_ekfb_p_lo,
             line_ekfb_b]
 
 
