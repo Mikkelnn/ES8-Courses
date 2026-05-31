@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#Just got chat to cook something
-
 # -----------------------------
 # 1) SYSTEM SETUP
 # -----------------------------
