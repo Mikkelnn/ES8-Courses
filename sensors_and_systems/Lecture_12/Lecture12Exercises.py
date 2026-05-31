@@ -1,11 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#Just got chat to cook something
 
-# -----------------------------
 # 1) SYSTEM SETUP
-# -----------------------------
 Ts = 0.01
 T = 10
 t = np.arange(0, T, Ts)
@@ -24,9 +21,8 @@ B = np.array([[0],
 Ad = np.eye(2) + Ts*A
 Bd = Ts*B
 
-# -----------------------------
+
 # TRUE SYSTEM SIMULATION
-# -----------------------------
 x = np.zeros((2, N))
 for k in range(N-1):
     x[:,k+1] = x[:,k] + Ts*(A @ x[:,k] + B.flatten()*u[k])
@@ -34,17 +30,14 @@ for k in range(N-1):
 y_true = x[0]
 v_true = x[1]
 
-# -----------------------------
 # ADD MEASUREMENT NOISE
-# -----------------------------
 np.random.seed(0)
 
 y_meas = y_true + np.random.normal(0, np.sqrt(0.05), N)
 v_meas = v_true + np.random.normal(0, np.sqrt(0.1), N)
 
-# =========================================================
+
 # 1) COMPLEMENTARY FILTER
-# =========================================================
 tau = 0.5
 
 alpha1 = tau*Ts/2 + 1
@@ -61,9 +54,7 @@ for k in range(1, N):
         + y_meas[k] + y_meas[k-1]
     )
 
-# =========================================================
 # 2) KALMAN FILTER
-# =========================================================
 H = np.eye(2)
 R = np.diag([0.05, 0.1])
 Q = 1e-4 * np.eye(2)
@@ -89,19 +80,16 @@ for k in range(N-1):
 y_kalman = x_hat[0]
 v_kalman = x_hat[1]
 
-# =========================================================
+
 # 3) VERIFY DISCRETE-TIME EXPRESSIONS (TUSTIN)
-# =========================================================
 
 # Integrate velocity using Tustin (should resemble position)
 y_tustin = np.zeros(N)
 for k in range(1, N):
     y_tustin[k] = y_tustin[k-1] + (Ts/2)*(v_meas[k] + v_meas[k-1])
 
-# =========================================================
-# PLOTS (MATCH SLIDE 14 STYLE)
-# =========================================================
 
+# PLOTS (MATCH SLIDE 14 STYLE)
 plt.figure(figsize=(12,5))
 
 # --- POSITION ---
