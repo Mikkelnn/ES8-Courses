@@ -84,22 +84,41 @@ def unscented_kalman_filter(y, u, p: SystemParams):
     P_prior_log = np.zeros(p.n)
     P_posterior_log = np.zeros(p.n)
 
-    x_hat_prior = p.x0
-    P_prior = p.P0
+    x_hat_posterior = p.x0
+    P_posterior = p.P0
 
     for k in range(p.n):
-        # Measurement update from the prior at time k
+        # Predict step: Calculate x_k|k-1 from x_k-1|k
+        if k == 0:
+            x_hat_prior = p.x0
+            P_prior = p.P0
+        else:
+            sigma_x_post, Wm_post, Wc_post = compute_sigma_points(x_hat_posterior, P_posterior)
+            x_sigma_pred = p.a * np.sin(sigma_x_post + p.phif) + p.b * u[k-1]
+            x_hat_prior = np.dot(Wm_post, x_sigma_pred)
+            P_prior = np.dot(Wc_post, (x_sigma_pred - x_hat_prior) ** 2) + p.Q
+
+        # Update step: Measurement update from the prior at time k
         sigma_x, Wm, Wc = compute_sigma_points(x_hat_prior, P_prior)
 
         y_sigma = np.sin(p.c * sigma_x + p.phih)
         y_prior_mean = np.dot(Wm, y_sigma)
+        
+        # Measurement covariance
         P_yy = np.dot(Wc, (y_sigma - y_prior_mean) ** 2) + p.R
+        
+        # Cross-covariance (state-measurement covariance)
+        # Use Wc for both covariance calculations, with deviations from Wm-weighted means
         P_xy = np.dot(Wc, (sigma_x - x_hat_prior) * (y_sigma - y_prior_mean))
 
+        # Kalman gain
         K = P_xy / P_yy
 
+        # State update
         x_hat_posterior = x_hat_prior + K * (y[k] - y_prior_mean)
-        P_posterior = P_prior - K * P_yy * K
+        
+        # Covariance update - Joseph form for numerical stability
+        P_posterior = P_prior - K * P_xy
 
         x_prior[k] = x_hat_prior
         y_predicted[k] = y_prior_mean
@@ -108,12 +127,6 @@ def unscented_kalman_filter(y, u, p: SystemParams):
         x_posterior[k] = x_hat_posterior
         K_log[k] = K
         P_posterior_log[k] = P_posterior
-
-        # Predict next prior for time k+1
-        sigma_x_post, Wm_post, Wc_post = compute_sigma_points(x_hat_posterior, P_posterior)
-        x_sigma_pred = p.a * np.sin(sigma_x_post + p.phif) + p.b * u[k]
-        x_hat_prior = np.dot(Wm_post, x_sigma_pred)
-        P_prior = np.dot(Wc_post, (x_sigma_pred - x_hat_prior) ** 2) + p.Q
 
     return x_prior, x_posterior, y_predicted, K_log, P_prior_log, P_posterior_log
 
