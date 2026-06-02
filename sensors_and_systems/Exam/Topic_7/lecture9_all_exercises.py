@@ -1,4 +1,4 @@
-# Lecture 9 — All exercises in one file. KF/EKF/UKF ported from Lecture 4 (functional style).
+# Lecture 9 — All exercises in one file. KF/EKF/UKF
 # Linear system:    x[i] = a*x[i-1] + b*u[i-1] + w,        y[i] = c*x[i] + v
 # Nonlinear system: x[i] = a*sin(x[i-1]+phi_f) + b*u + w,   y[i] = sin(c*x[i]+phi_h) + v
 
@@ -14,9 +14,9 @@ RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
-# =============================================================================
+
 # System Parameters
-# =============================================================================
+
 
 @dataclass
 class SystemParams:
@@ -58,9 +58,9 @@ def make_nonlinear_params(n=100):
                         x0=0.0, P0=sigmaw**2)
 
 
-# =============================================================================
+
 # Simulation Functions
-# =============================================================================
+
 
 def simulate_linear_system(p: SystemParams, seed=None):
     # Simulate x[i] = a*x[i-1] + b*u[i-1] + w,  y[i] = c*x[i] + v
@@ -131,9 +131,9 @@ def simulate_linear_system_with_noise_type(p: SystemParams, use_normal_process,
     return true_state, measurement, input_signal
 
 
-# =============================================================================
-# Kalman Filter — ported from Lecture_4/main.py
-# =============================================================================
+
+# Kalman Filter
+
 
 def run_kalman_filter(measurement_y, input_u, p: SystemParams):
     # Linear KF: update with K = Pm*H/(H*Pm*H+R), then predict with Phi=a (constant Jacobians)
@@ -176,9 +176,9 @@ def run_kalman_filter(measurement_y, input_u, p: SystemParams):
                 Pm=prior_covariance_log, Pp=posterior_covariance_log)
 
 
-# =============================================================================
-# Extended Kalman Filter — ported from Lecture_4/main.py
-# =============================================================================
+
+# Extended Kalman Filter
+
 
 def run_extended_kalman_filter(measurement_y, input_u, p: SystemParams):
     # EKF: linearize at each step via Jacobians H=c*cos(c*x+phi_h), Phi=a*cos(x+phi_f)
@@ -223,9 +223,9 @@ def run_extended_kalman_filter(measurement_y, input_u, p: SystemParams):
                 Pm=prior_covariance_log, Pp=posterior_covariance_log)
 
 
-# =============================================================================
-# Unscented Kalman Filter — ported from Lecture_4/lecture4_exercises.py
-# =============================================================================
+
+# Unscented Kalman Filter
+
 
 def generate_sigma_points(mean, variance, scale):
     # 3 sigma points for scalar state: x0=mean, x1=mean+sqrt(scale*P), x2=mean-sqrt(scale*P)
@@ -303,9 +303,9 @@ def run_unscented_kalman_filter(measurement_y, input_u, p: SystemParams):
                 Pm=prior_covariance_log, Pp=posterior_covariance_log)
 
 
-# =============================================================================
+
 # Utility Functions
-# =============================================================================
+
 
 def compute_rmse(error_array):
     # Root Mean Squared Error
@@ -328,9 +328,9 @@ def save_text_results(filename, text_lines):
     return filepath
 
 
-# =============================================================================
+
 # Exercise 1 — Whiteness Test
-# =============================================================================
+
 
 def plot_whiteness_test_panel(ax, innovations, panel_title, max_lag=24):
     # Chi-squared whiteness test: stat = N * sum(rho[1..m]^2), df=m; p>0.05 means white
@@ -397,9 +397,9 @@ def run_exercise_1(seed=42):
     plt.show()
 
 
-# =============================================================================
+
 # Exercise 2 — Normality Test
-# =============================================================================
+
 
 
 def run_exercise_2(seed=42):
@@ -444,9 +444,9 @@ def run_exercise_2(seed=42):
     plt.show()
 
 
-# =============================================================================
+
 # Exercise 3 — Uniform vs Normal Noise
-# =============================================================================
+
 
 def run_exercise_3(seed=42):
     # KF is BLUE for any zero-mean noise: whiteness always passes; normality fails for uniform noise
@@ -508,9 +508,9 @@ def run_exercise_3(seed=42):
     plt.show()
 
 
-# =============================================================================
+
 # Exercise 4 — Effect of Sample Size N
-# =============================================================================
+
 
 def run_exercise_4(seed=42):
     # CI width = 2*1.96/sqrt(N) shrinks with N; larger N detects even tiny correlations
@@ -566,9 +566,9 @@ def run_exercise_4(seed=42):
     plt.show()
 
 
-# =============================================================================
+
 # Exercise 5 — EKF Joint State and Parameter Estimation
-# =============================================================================
+
 
 def run_ekf_for_parameter_estimation(measurement_y, input_u, p: SystemParams,
                                       a0_initial_guess, sigma_a0,
@@ -788,9 +788,9 @@ def run_exercise_5(seed=42):
     plt.show()
 
 
-# =============================================================================
+
 # Main
-# =============================================================================
+
 
 if __name__ == '__main__':
     SEED = 42069
