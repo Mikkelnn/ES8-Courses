@@ -161,8 +161,7 @@ def run_kalman_filter(measurement_y, input_u, p: SystemParams):
         # Measurement update: Joseph form Pp = (1-KH)*Pm*(1-KH) + K*R*K
         K_gain          = P_prior * H_linear / (H_linear * P_prior * H_linear + p.R)
         x_hat_posterior = x_hat_prior + K_gain * (measurement_y[k] - z_hat)
-        P_posterior     = ((1 - K_gain * H_linear) * P_prior
-                          Exam/Topic_1/removeme.txt * (1 - K_gain * H_linear) + K_gain * p.R * K_gain)
+        P_posterior     = ((1 - K_gain * H_linear) * P_prior  * (1 - K_gain * H_linear) + K_gain * p.R * K_gain)
 
         posterior_state_estimate[k] = x_hat_posterior
         kalman_gain_log[k]          = K_gain
