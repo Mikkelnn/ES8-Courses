@@ -6,9 +6,7 @@ from scipy.signal import cont2discrete
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# -----------------------------
 # Simulation settings
-# -----------------------------
 np.random.seed(4)
 
 sampling_period_seconds       = 0.1
@@ -19,7 +17,6 @@ num_time_steps                = len(time_axis_seconds)
 
 complementary_filter_time_constant = 0.5   # tau: sets crossover frequency between sensors
 
-# -----------------------------
 # Continuous-time state-space model
 # State vector: x = [position y, velocity v]^T
 #
@@ -27,7 +24,6 @@ complementary_filter_time_constant = 0.5   # tau: sets crossover frequency betwe
 #   dv/dt = -0.015*v + 0.5*u
 #
 # Chosen dynamics: light damping (-0.015) and moderate input gain (0.5)
-# -----------------------------
 continuous_state_matrix = np.array([
     [0.0,  1.0],
     [0.0, -0.015]
@@ -56,10 +52,8 @@ def compute_input_at_time(time_value):
 
 input_signal_sequence = compute_input_at_time(time_axis_seconds)
 
-# -----------------------------
 # Generate deterministic (noise-free) system response
 # x[k+1] = Phi * x[k] + Gamma * u[k]
-# -----------------------------
 true_state_trajectory = np.zeros((num_time_steps, 2))
 
 for time_index in range(num_time_steps - 1):
@@ -70,11 +64,9 @@ for time_index in range(num_time_steps - 1):
 true_position_sequence = true_state_trajectory[:, 0]
 true_velocity_sequence = true_state_trajectory[:, 1]
 
-# -----------------------------
 # Add independent Gaussian measurement noise
 # Var(position noise) = 0.05  ->  sigma_y = sqrt(0.05) ≈ 0.224
 # Var(velocity noise) = 0.10  ->  sigma_v = sqrt(0.10) ≈ 0.316
-# -----------------------------
 position_measurement_variance = 0.05
 velocity_measurement_variance = 0.10
 
@@ -83,7 +75,6 @@ noisy_position_measurement = (true_position_sequence
 noisy_velocity_measurement = (true_velocity_sequence
                                + np.sqrt(velocity_measurement_variance) * np.random.randn(num_time_steps))
 
-# ============================================================
 # 1. Complementary filter for position
 #
 # Derived from the bilinear (Tustin) transform of the ideal complementary transfer:
@@ -95,7 +86,6 @@ noisy_velocity_measurement = (true_velocity_sequence
 #
 # Recurrence:
 #   y_cf[k] = (-alpha0*y_cf[k-1] + tau*(v[k]+v[k-1]) + (y[k]+y[k-1])) / alpha1
-# ============================================================
 complementary_filter_coeff_alpha1 = 2.0 * complementary_filter_time_constant / sampling_period_seconds + 1.0
 complementary_filter_coeff_alpha0 = 1.0 - 2.0 * complementary_filter_time_constant / sampling_period_seconds
 
@@ -110,7 +100,6 @@ for time_index in range(1, num_time_steps):
         + (noisy_position_measurement[time_index] + noisy_position_measurement[time_index - 1])
     ) / complementary_filter_coeff_alpha1
 
-# ============================================================
 # 2. Sensor-fused Kalman filter
 #
 # Both position and velocity are measured directly:
@@ -128,7 +117,6 @@ for time_index in range(1, num_time_steps):
 #   Update:      x̂ = x̂ + K*ỹ
 #   Covariance:  P = (I-KH)*P*(I-KH)' + K*R*K'
 #   Predict:     x̂ = Phi*x̂ + Gamma*u,  P = Phi*P*Phi' + Q
-# ============================================================
 measurement_matrix = np.eye(2)   # H: directly observe both position and velocity
 
 measurement_noise_covariance = np.array([
@@ -178,9 +166,7 @@ for time_index in range(num_time_steps):
 kalman_filter_position_estimate = kalman_filter_state_history[:, 0]
 kalman_filter_velocity_estimate = kalman_filter_state_history[:, 1]
 
-# ============================================================
 # Plot and save results
-# ============================================================
 fig, axs = plt.subplots(2, 1, figsize=(10, 7))
 fig.suptitle('Lecture 11 — Complementary Filter vs Kalman Filter', fontsize=13)
 
