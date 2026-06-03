@@ -1,0 +1,14 @@
+Exercise 5 - EKF Joint State and Parameter Estimation
+============================================================
+True a:              0.95000
+Initial guess a0:    0.50000
+Final estimate a:    0.94755
+Final error |a-a*|:  0.00245
+Final Pm[1,1]:       1.85072e-05  (variance on a)
+
+Method: augment state vector with parameter a -> [x; a]
+  x_next = a_hat * x_hat + b*u   bilinear in [x;a] -> EKF needed
+  a_next = aa * a_hat            constant model (aa=1, sigma_wa=0)
+  y      = c*x + v              linear -> H=[c,0] (constant Jacobian)
+  Phi    = [[a_hat, x_hat],      Jacobian of state transition
+            [0,     aa    ]]
