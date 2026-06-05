@@ -1,0 +1,39 @@
+<!-- $Id: info.xml 300 2006-01-06 12:31:12Z wandeler $ -->
+<productinfo>
+
+<matlabrelease>14</matlabrelease>
+<name>Real-Time Calculus</name>
+<type>toolbox</type>
+<icon>$toolbox/matlab/icons/matlabicon.gif</icon>
+<help_location>$docroot/toolbox/rtc</help_location>
+
+<list>
+
+<!--listitem>
+<label>Modular Performance Analysis Block Library</label>
+<callback>mpctool;</callback>
+<icon>$toolbox/matlab/icons/figureicon.gif</icon>
+<icon>$toolbox/matlab/icons/simulinkicon.gif</icon>
+</listitem-->
+
+<!--listitem>
+<label>Help</label>
+<callback>doc rtc/</callback> 
+<icon>$toolbox/matlab/icons/book_mat.gif</icon>
+</listitem-->
+
+<!--listitem>
+<label>Demos</label>
+<callback>demo toolbox 'Model Predictive Control'</callback>
+<icon>$toolbox/matlab/icons/demoicon.gif</icon>
+</listitem-->
+
+<listitem>
+<label>Product Page (Web)</label>
+<callback>web http://www.tik.ee.ethz.ch/rtc -browser;</callback>
+<icon>$toolbox/matlab/icons/webicon.gif</icon>
+</listitem>
+
+</list>
+
+</productinfo>

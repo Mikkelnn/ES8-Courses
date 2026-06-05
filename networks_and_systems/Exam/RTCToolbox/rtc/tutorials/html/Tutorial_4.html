@@ -1,0 +1,334 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Part 4: Using the Java API</title>
+      <meta name="generator" content="MATLAB 7.4">
+      <meta name="date" content="2007-08-28">
+      <meta name="m-file" content="Tutorial_4"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Part 4: Using the Java API</h1>
+         <introduction></introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Introduction</a></li>
+               <li><a href="#2">Implementing a New Operator</a></li>
+               <li><a href="#5">Using the Java API</a></li>
+               <li><a href="#9">Getting and Using Curve Data</a></li>
+            </ul>
+         </div>
+         <h2>Introduction<a name="1"></a></h2>
+         <p>The RTC Toolbox internally consists of two major software components: a kernel that is implemented in Java, and a set of MATLAB
+            libraries that connect the Java kernel to the MATLAB command line interface.
+         </p>
+         <p>For most users, the MATLAB libraries will provide enough functionality. However, sometimes it may be required or it may be
+            more convenient to access the Java API directly.
+         </p>
+         <p>This tutorial presents a small case study that demonstrates how the Java API can be accessed from within MATLAB.</p>
+         <p>E. Wandeler. Modular Performance Analysis and Interface-Based Design for Embedded Real-Time Systems. PhD thesis, ETH Zurich,
+            September 2006.
+         </p>
+         <h2>Implementing a New Operator<a name="2"></a></h2>
+         <p>Suppose we want to implement the following new operator:</p>
+         <p><img vspace="5" hspace="5" src="Tutorial_4_eq2448379.png"> </p>
+         <p>The <tt>rtcaffine</tt> function is very similar to this operator:
+         </p><pre class="codeinput">a = rtcbdu(5,2);
+d = 3;
+b = rtcaffine(a, 1, d);
+rtcplot(a, <span class="string">'r'</span>, b, <span class="string">'g'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_4_01.png"> <p>However, used as above with a scaling factor 1, the <tt>rtcaffine</tt> function implements the following operation:
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_4_eq1510335.png"> </p>
+         <p>As we see, we need to determine the value of <tt>a</tt> at <tt>x=0+</tt> in order to implement our new operator.
+         </p>
+         <p>When we consult the Java API documentation, we find a method of the class <tt>curve</tt>, that is called <tt>y0epsilon()</tt>, and that returns the value of a curve at <tt>x=0+</tt>.
+         </p>
+         <p>We will now use this method, to build our new operator.</p>
+         <h2>Using the Java API<a name="5"></a></h2>
+         <p>To make the Java API accessible from within MATLAB, we must first import the API with the following code:</p><pre class="codeinput">import <span class="string">ch.ethz.rtc.kernel.*</span>;
+</pre><p>Then we can access all methods of the API, and since <tt>a</tt> is a curve and thus an instance of the class <tt>curve</tt>, we can access the methods <tt>y0epsilon()</tt> of the curve instance <tt>a</tt>:
+         </p><pre class="codeinput">a0 = a.y0epsilon();
+</pre><p>Next, we move the curve with the <tt>rtcaffine</tt> function:
+         </p><pre class="codeinput">b = rtcaffine(a, 1, d);
+</pre><p>And finally, we take the maximum of the moved curve, and the constant curve with <tt>y=a0</tt>:
+         </p><pre class="codeinput">b = rtcmax(b, a0);
+rtcplot(a, <span class="string">'r'</span>, b, <span class="string">'g'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_4_02.png"> <h2>Getting and Using Curve Data<a name="9"></a></h2>
+         <p>In order to implement new operators in Matlab, one may need access to the curve representation. To this end, the Java API
+            defines several access functions. For example, let is first define a curve <tt>f</tt> and plot it:
+         </p><pre class="codeinput">f = rtccurve([[0 3 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5, 4);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_4_03.png"> <p>The curve f is of class <tt>ch.ethz.rtc.kernel.Curve</tt>; we can have a look at some of the internals by tying <tt>f</tt>, but in order to actually access the necessary data, we need special access functions. The function <tt>rtcexport</tt> exports a curve or a curve set to a string representation, that can directly be used in Matlab to create a new curve with
+            the same data. Using the Matlab function <tt>eval</tt>, the string can be converted to a curve again:
+         </p><pre class="codeinput">rtcexport(f)
+</pre><pre class="codeoutput">
+ans =
+
+rtccurve([[0.0 3.0 2.0]], [[0.0 0.0 1.0];[2.0 2.0 0.25]], 3.0, 10.0, 5, 4.0)
+
+</pre><pre class="codeinput">g = eval(rtcexport(f))
+</pre><pre class="codeoutput"> 
+g =
+ 
+Curve: 
+  AperiodicPart  = {(0.0,3.0,2.0)} 
+  PeriodicPart   = {(0.0,0.0,1.0)(2.0,2.0,0.25)} 
+   (px0,py0)     = (3.0,10.0)
+   (pdx,pdy,pds) = (5.0,4.0,0.8)
+   (pyMin,pyMax) = (0.0,2.75)
+
+ 
+</pre><p>In order to access the individual fields of a curve, we can either decompose the string obtained by <tt>rtcexport</tt> or otherwise, we may make use of some Java API functions. Let us suppose, that <tt>f</tt> is a curve, then the following functions can be used:
+         </p>
+         <div>
+            <ul>
+               <li><tt>f.hasAperiodicPart</tt>: Returns true if this curve has an aperiodic part.
+               </li>
+               <li><tt>f.hasPeriodicPart</tt>: Returns true if this curve has a periodic part.
+               </li>
+               <li><tt>f.isConstant</tt> Returns true, if this Curve represents a constant.
+               </li>
+               <li><tt>f.aperiodicSegments.toMatlabString</tt>: Returns the aperiodic segments of this curve as an array. The elements <tt>(i,1)</tt> and <tt>(i,2)</tt> denote the x-value and y-value of the start point of segement <tt>i</tt>, respectively, and <tt>(i,3)</tt> denotes its slope. This function only works correctly, if the curve actually has an aperiodic segment!
+               </li>
+               <li><tt>f.periodicSegments.toMatlabString</tt>: Returns the periodic segments of this curve as an array. The elements <tt>(i,1)</tt> and <tt>(i,2)</tt> denote the x-value and y-value of the start point of segement <tt>i</tt>, respectively, and <tt>(i,3)</tt> denotes its slope. This function only works correctly, if the curve actually has an periodic segment!
+               </li>
+               <li><tt>f.pdx</tt>, <tt>f.pdy</tt>: Return the delta on the x- and y-axis between two consecutive repetitions of the periodic part. <tt>f.pdx</tt> is also called period and can be obtained by <tt>f.period</tt>. It has to be a positive integer!
+               </li>
+               <li><tt>f.pds</tt>: Returns the overall slope of the periodic part pds = pdy / pdx.
+               </li>
+               <li><tt>f.px0</tt>, <tt>f.py0</tt>: Return the x- and y-coordinates where the periodic part of this curve starts.
+               </li>
+               <li><tt>f.y0epsilon</tt>: Returns the y-value of this curve at x = 0 + epsilon.
+               </li>
+               <li><tt>f.pyMax</tt>, <tt>f.pyMin</tt>: Returns the maximum and minimum y-values of the periodic part within <tt>x = [0,pdx]</tt> in the relative coordinate system with origin <tt>(px0/py0)</tt>.
+               </li>
+            </ul>
+         </div>
+         <p>For example, we have (see also the plot of the curve <tt>f</tt>):
+         </p><pre class="codeinput">eval(f.aperiodicSegments.toMatlabString)
+</pre><pre class="codeoutput">
+ans =
+
+     0     3     2
+
+</pre><pre class="codeinput">eval(f.periodicSegments.toMatlabString)
+</pre><pre class="codeoutput">
+ans =
+
+         0         0    1.0000
+    2.0000    2.0000    0.2500
+
+</pre><pre class="codeinput">[f.px0 f.py0 f.pdx f.pdy]
+</pre><pre class="codeoutput">
+ans =
+
+     3    10     5     4
+
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.4<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Part 4: Using the Java API
+
+
+%% Introduction
+% The RTC Toolbox internally consists of two major software components: a
+% kernel that is implemented in Java, and a set of MATLAB libraries that
+% connect the Java kernel to the MATLAB command line interface.
+% 
+% For most users, the MATLAB libraries will provide enough functionality.  
+% However, sometimes it may be required or it may be more convenient to 
+% access the Java API directly.
+%
+% This tutorial presents a small case study that demonstrates how the Java 
+% API can be accessed from within MATLAB.
+% 
+% E. Wandeler. Modular Performance Analysis and Interface-Based Design for
+% Embedded Real-Time Systems. PhD thesis, ETH Zurich, September 2006.
+
+%% Implementing a New Operator
+% Suppose we want to implement the following new operator:
+%
+% $$
+% (a \triangleleft d)(\Delta) = \left\{
+% \begin{array}{ll}
+% a(\Delta -d ) \quad & \Delta > d \\
+% a(0^+)        \quad & 0 < \Delta \leq d \\
+% 0             \quad & \Delta = 0
+% \end{array}
+% \right.
+% $$
+%
+% The |rtcaffine| function is very similar to this operator:
+a = rtcbdu(5,2);
+d = 3;
+b = rtcaffine(a, 1, d);
+rtcplot(a, 'r', b, 'g', 20);
+%%
+% However, used as above with a scaling factor 1, the |rtcaffine| function
+% implements the following operation:
+%
+% $$
+% (a \triangleleft' d)(\Delta) = \left\{
+% \begin{array}{ll}
+% a(\Delta -d ) \quad & \Delta > d \\
+% 0             \quad & 0 \leq \Delta \leq d \\
+% \end{array}
+% \right.
+% $$
+%% 
+% As we see, we need to determine the value of |a| at |x=0+| in order to
+% implement our new operator. 
+%
+% When we consult the Java API documentation, we find a method of the class
+% |curve|, that is called |y0epsilon()|, and that returns the value of a
+% curve at |x=0+|.
+% 
+% We will now use this method, to build our new operator.
+
+%% Using the Java API
+% To make the Java API accessible from within MATLAB, we must first import
+% the API with the following code:
+import ch.ethz.rtc.kernel.*;
+%% 
+% Then we can access all methods of the API, and since |a| is a curve and
+% thus an instance of the class |curve|, we can access the methods 
+% |y0epsilon()| of the curve instance |a|:
+a0 = a.y0epsilon();
+%%
+% Next, we move the curve with the |rtcaffine| function:
+b = rtcaffine(a, 1, d);
+%%
+% And finally, we take the maximum of the moved curve, and the constant
+% curve with |y=a0|:
+b = rtcmax(b, a0);
+rtcplot(a, 'r', b, 'g', 20);
+
+%% Getting and Using Curve Data
+% In order to implement new operators in Matlab, one may need access to the
+% curve representation. To this end, the Java API defines several access
+% functions. For example, let is first define a curve |f| and plot it:
+f = rtccurve([[0 3 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5, 4);
+rtcplot(f, 20);
+%%
+% The curve f is of class |ch.ethz.rtc.kernel.Curve|; we can have a look at
+% some of the internals by tying |f|, but in order to actually access the
+% necessary data, we need special access functions. The function 
+% |rtcexport| exports a curve or a curve set to a string representation,
+% that can directly be used in Matlab to create a new curve with the same
+% data. Using the Matlab function |eval|, the string can be converted to a
+% curve again:
+rtcexport(f)
+%%
+g = eval(rtcexport(f))
+%%
+% In order to access the individual fields of a curve, we can either
+% decompose the string obtained by |rtcexport| or otherwise, we may make
+% use of some Java API functions. Let us suppose, that |f| is a curve, then
+% the following functions can be used:
+%%
+% * |f.hasAperiodicPart|: Returns true if this curve has an aperiodic part.
+% * |f.hasPeriodicPart|: Returns true if this curve has a periodic part.
+% * |f.isConstant| Returns true, if this Curve represents a constant.
+% * |f.aperiodicSegments.toMatlabString|: Returns the aperiodic segments of 
+% this curve as an array. The elements |(i,1)| and |(i,2)| denote the 
+% x-value and y-value of the start point of segement |i|, respectively, and
+% |(i,3)| denotes its slope. This function only works correctly, if the
+% curve actually has an aperiodic segment!
+% * |f.periodicSegments.toMatlabString|: Returns the periodic segments of 
+% this curve as an array. The elements |(i,1)| and |(i,2)| denote the 
+% x-value and y-value of the start point of segement |i|, respectively, and
+% |(i,3)| denotes its slope. This function only works correctly, if the
+% curve actually has an periodic segment!
+% * |f.pdx|, |f.pdy|: Return the delta on the x- and y-axis between two 
+% consecutive repetitions of the periodic part. |f.pdx| is also called
+% period and can be obtained by |f.period|. It has to be a positive 
+% integer!
+% * |f.pds|: Returns the overall slope of the periodic part 
+% pds = pdy / pdx.
+% * |f.px0|, |f.py0|: Return the x- and y-coordinates where the periodic 
+% part of this curve starts.
+% * |f.y0epsilon|: Returns the y-value of this curve at x = 0 + epsilon.
+% * |f.pyMax|, |f.pyMin|: Returns the maximum and minimum y-values of the 
+% periodic part within |x = [0,pdx]| in the relative coordinate system 
+% with origin |(px0/py0)|.
+%%
+% For example, we have (see also the plot of the curve |f|):
+eval(f.aperiodicSegments.toMatlabString)
+%%
+eval(f.periodicSegments.toMatlabString)
+%%
+[f.px0 f.py0 f.pdx f.pdy]
+
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

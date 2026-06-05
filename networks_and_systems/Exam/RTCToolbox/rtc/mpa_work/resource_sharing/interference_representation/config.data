@@ -1,0 +1,15 @@
+%number of superblocks
+%period
+%number of cache misses - best case
+%number of cache misses - worst case
+%communication time per cache miss
+%execution time - best case
+%execution time - worst case
+10
+285
+7 2 9 3 11 2 5 5 12 13
+10 12 9 10 14 4 6 12 13 18
+2
+8 9 5 4 7 6 3 1 2 5
+10 30 9 10 15 9 4 2 4 5
+

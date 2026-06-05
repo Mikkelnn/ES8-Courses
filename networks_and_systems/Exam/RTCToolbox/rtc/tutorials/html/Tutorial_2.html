@@ -1,0 +1,422 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Part 2: Min-Plus/Max-Plus Algebra</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-12-15">
+      <meta name="m-file" content="Tutorial_2"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>Part 2: Min-Plus/Max-Plus Algebra</h1>
+         <introduction></introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Basic Operations</a></li>
+               <li><a href="#20">Comparisons</a></li>
+               <li><a href="#22">Complex Operations</a></li>
+               <li><a href="#27">Concatenation</a></li>
+               <li><a href="#29">Visualizations</a></li>
+            </ul>
+         </div>
+         <h2>Basic Operations<a name="1"></a></h2>
+         <p>The Real-Time Calculus (RTC) Toolbox defines a number of basic operations on curves that are explained in the following.</p>
+         <p>Let us again first create two curves <tt>f</tt> and <tt>g</tt></p><pre class="codeinput">f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 4, 6);
+g = rtccurve([[0 0 0];[5 0 1];[10 5 2]]);
+</pre><p>The sum of two curves <tt>f</tt> and <tt>g</tt> is computed with the <tt>rtcplus</tt> function <tt>h = rtcplus(f, g)</tt>. The sum is thereby defined as the point-wise sum of the two curves.
+         </p><pre class="codeinput">h = rtcplus(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_01.png"> <p>It is also possible to add a scalar to a curve <tt>h = rtcplus(f, 4)</tt>. The sum of a curve and a scalar is defined as the point-wise sum of the curve and the scalar.
+         </p><pre class="codeinput">h = rtcplus(f, 4);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_02.png"> <p>Note, the unary plus of a curve <tt>h = rtcuplus(f)</tt> is also defined and creates a deep clone of a curve. To fully understand the usefulness of this operator, it has to be noted
+            that curves are JAVA objects within Matlab.
+         </p>
+         <p>The substraction of two curves <tt>f</tt> and <tt>g</tt> is computed with the <tt>rtcminus</tt> function <tt>h = rtcminus(f, g)</tt>. The substraction is thereby defined as the point-wise substraction of the two curves.
+         </p><pre class="codeinput">h = rtcminus(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_03.png"> <p>It is also possible to substract a scalar from a curve: <tt>h = rtcminus(f, 4)</tt>. The substraction of a curves and a scalar is defined as the point-wise substraction of the curve and the scalar.
+         </p><pre class="codeinput">h = rtcminus(f, 4);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_04.png"> <p>Analogously it is also possible to substract a curve from a scalar: <tt>h = rtcminus(4, f)</tt>.
+         </p><pre class="codeinput">h = rtcminus(4, f);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_05.png"> <p>The function <tt>rtcminus</tt> returns the negation of a curve:
+         </p><pre class="codeinput">h = rtcuminus(f);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_06.png"> <p>The <tt>rtcmax</tt> operator is used to compute the maximum of two curves <tt>h = rtcmax(f, g)</tt>. The maximum of two curves is again defined as the point-wise maximum of the curves.
+         </p><pre class="codeinput">h = rtcmax(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_07.png"> <p>The <tt>rtcmin</tt> operator is used analogously to compute the minimum of two curves <tt>h = rtcmin(f, g)</tt>.
+         </p><pre class="codeinput">h = rtcmin(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_08.png"> <p>A curve can be scaled along the y-axis with the <tt>rtcrdivide</tt> function <tt>h = rtcrdivide(f, 3)</tt> and the <tt>rtctimes</tt> function <tt>h = rtctimes(f, 5)</tt>. The division of a curve and a scalar is defined as the point-wise division of the curve with the scalar, while the multiplication
+            is defined as the point-wise multiplication.
+         </p><pre class="codeinput">h = rtcrdivide(f, 1.2);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_09.png"> <pre class="codeinput">h = rtctimes(f, 3.4);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_10.png"> <p>The <tt>rtcaffine</tt> operator is used to compute the affine transformation of a curve <tt>h(x) = f(1/a*(x-b))</tt> or <tt>f(x) = h(a*x + b)</tt>. That is, a curve can be scaled and moved along the x-axis with this operator. Note, if <tt>f</tt> is a curve with a periodic part with period <tt>p</tt> then <tt>a*p</tt> must be an positive natural number.
+         </p><pre class="codeinput">h = rtcaffine(f, 0.5, 3);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_11.png"> <p>The <tt>rtcinvert</tt> operator is used to invert a curve f.
+         </p><pre class="codeinput">h = rtcinvert(f);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_12.png"> <p>The <tt>rtcceil</tt> and the <tt>rtcfloor</tt> operators are used to compute the point-wise ceil <tt>h = rtcceil(f)</tt> or floor <tt>h = rtcfloor(f)</tt> of a curve, respectively.
+         </p><pre class="codeinput">h = rtcceil(f);
+rtcplot(f, <span class="string">'g--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_13.png"> <pre class="codeinput">h = rtcfloor(g);
+rtcplot(g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_14.png"> <p>The operator <tt>rtch</tt> can be used to compute the maximum horizontal discance between two curves <tt>d = rtch(f, g)</tt>. The maximum horizontal distance is thereby defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq94253.png"> </p>
+         <p>The operator <tt>rtcv</tt> can be used analogously to compute the maximum vertical discance between two curves <tt>d = rtcv(f, g)</tt>. The maximum vertical distance is thereby defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq37503.png"> </p>
+         <h2>Comparisons<a name="20"></a></h2>
+         <p>The Real-Time Calculus (RTC) Toolbox so far only defines the equality comparison operator.</p>
+         <p>The <tt>rtceq</tt> function checks whether two curves are equal <tt>rtceq(f, g)</tt>.
+         </p>
+         <h2>Complex Operations<a name="22"></a></h2>
+         <p>The Real-Time Calculus (RTC) Toolbox defines a number of complex operations on curves that are explained in the following.</p>
+         <p>The <tt>rtcminconv</tt> operator computes the min-plus-convolution of two curves <tt>h = rtcminconv(f, g)</tt> that is defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq18062.png"> </p>
+         <p>The <tt>rtcminconv</tt> operator is also defined for a curve and a scalar.
+         </p><pre class="codeinput">h = rtcminconv(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_15.png"> <p>The <tt>rtcmindeconv</tt> operator computes the min-plus-deconvolution of two curves <tt>h = rtcmindeconv(f, g)</tt> that is defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq58495.png"> </p>
+         <p>The <tt>rtcmindeconv</tt> operator is also defined for a curve and a scalar.
+         </p><pre class="codeinput">h = rtcmindeconv(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_16.png"> <p>The <tt>rtcmaxconv</tt> operator computes the max-plus-convolution of two curves <tt>h = rtcmaxconv(f, g)</tt> that is defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq89290.png"> </p>
+         <p>The <tt>rtcmaxconv</tt> operator is also defined for a curve and a scalar.
+         </p><pre class="codeinput">h = rtcmaxconv(f, g);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_17.png"> <p>The <tt>rtcmaxdeconv</tt> operator computes the max-plus-deconvolution of two curves <tt>h = rtcmaxdeconv(g, f)</tt> that is defined as
+         </p>
+         <p><img vspace="5" hspace="5" src="Tutorial_2_eq98486.png"> </p>
+         <p>The <tt>rtcmaxdeconv</tt> operator is also defined for a curve and a scalar.
+         </p><pre class="codeinput">h = rtcmaxdeconv(g, f);
+rtcplot(f, <span class="string">'g--'</span>, g, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_18.png"> <h2>Concatenation<a name="27"></a></h2>
+         <p>The <tt>rtcconcat</tt> operator computes the concatenation of two curves g and f as g(f).
+         </p><pre class="codeinput">h = rtcconcat(g, f, <span class="string">'lower'</span>);
+rtcplot(g, <span class="string">'g--'</span>, f, <span class="string">'b--'</span>, h, <span class="string">'r'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_19.png"> <p>Note that the semantics of the concatenation depends on the evaluation of a curve at a given place. If a curve is discontinuous,
+            the evaluation of an upper and a lower curve is different. Therefore, one needs to specify whether the curves are <tt>'upper'</tt> or <tt>'lower'</tt> curves.
+         </p>
+         <h2>Visualizations<a name="29"></a></h2>
+         <p>The Real-Time Calculus (RTC) Toolbox defines a number of functions to visualize data about curves.</p>
+         <p>The function <tt>rtcplotbounds</tt> plots the upper and lower bounds of a curve. Note, for a curve with a periodic part, the upper and lower bounds are only
+            defined after the start of the periodic part, while for a curve with no periodic part, the last curve segment of the curve
+            is treated as the upper as well as the lower bound of the curve.
+         </p><pre class="codeinput">rtcplot(f);
+rtcplotbounds(f);
+</pre><img vspace="5" hspace="5" src="Tutorial_2_20.png"> <p>The function <tt>rtcploth</tt> plots and computes the maximum horizontal distance between two curves <tt>f</tt> and <tt>g</tt>, that can also be computes as <tt>d = rtch(f, g)</tt>.
+         </p><pre class="codeinput">rtcplot(f, <span class="string">'r--'</span>, g, <span class="string">'b--'</span>, 20);
+d = rtcploth(f, g)
+</pre><pre class="codeoutput">
+d =
+
+    8.5000
+
+</pre><img vspace="5" hspace="5" src="Tutorial_2_21.png"> <p>The function <tt>rtcplotv</tt> plots and computes the maximum vertical distance between two curves <tt>f</tt> and <tt>g</tt>, that can also be computes as <tt>d = rtcv(f, g)</tt>.
+         </p><pre class="codeinput">rtcplot(f, <span class="string">'r--'</span>, g, <span class="string">'b--'</span>, 20);
+d = rtcplotv(f, g)
+</pre><pre class="codeoutput">
+d =
+
+    11
+
+</pre><img vspace="5" hspace="5" src="Tutorial_2_22.png"> <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Part 2: Min-Plus/Max-Plus Algebra
+
+
+%% Basic Operations
+% The Real-Time Calculus (RTC) Toolbox defines a number of basic
+% operations on curves that are explained in the following.
+
+%% 
+% Let us again first create two curves |f| and |g|
+f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 4, 6);
+g = rtccurve([[0 0 0];[5 0 1];[10 5 2]]);
+
+%%
+% The sum of two curves |f| and |g| is computed with the |rtcplus| function
+% |h = rtcplus(f, g)|. The sum is thereby defined as the point-wise sum of 
+% the two curves.
+h = rtcplus(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% It is also possible to add a scalar to a curve |h = rtcplus(f, 4)|. The sum of a 
+% curve and a scalar is defined as the point-wise sum of the curve and the
+% scalar.
+h = rtcplus(f, 4);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% Note, the unary plus of a curve |h = rtcuplus(f)| is also defined and creates a
+% deep clone of a curve. To fully understand the usefulness of this 
+% operator, it has to be noted that curves are JAVA objects within Matlab.
+
+%%
+% The substraction of two curves |f| and |g| is computed with the |rtcminus| 
+% function |h = rtcminus(f, g)|. The substraction is thereby defined as the 
+% point-wise substraction of the two curves.
+h = rtcminus(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% It is also possible to substract a scalar from a curve: |h = rtcminus(f, 4)|. The 
+% substraction of a curves and a scalar is defined as the point-wise 
+% substraction of the curve and the scalar.
+h = rtcminus(f, 4);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% Analogously it is also possible to substract a curve from a scalar: 
+% |h = rtcminus(4, f)|. 
+h = rtcminus(4, f);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The function |rtcminus| returns the negation of a curve:
+h = rtcuminus(f);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcmax| operator is used to compute the maximum of two curves |h =
+% rtcmax(f, g)|. The maximum of two curves is again defined as the point-wise
+% maximum of the curves.
+h = rtcmax(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcmin| operator is used analogously to compute the minimum of two
+% curves |h = rtcmin(f, g)|.
+h = rtcmin(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% A curve can be scaled along the y-axis with the |rtcrdivide| function
+% |h = rtcrdivide(f, 3)| and the |rtctimes| function |h = rtctimes(f, 5)|. The division
+% of a curve and a scalar is defined as the point-wise division of the 
+% curve with the scalar, while the multiplication is defined as the
+% point-wise multiplication.
+h = rtcrdivide(f, 1.2);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+h = rtctimes(f, 3.4);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcaffine| operator is used to compute the affine transformation of a
+% curve |h(x) = f(1/a*(x-b))| or |f(x) = h(a*x + b)|. That is, a curve can
+% be scaled and moved along the x-axis with this operator. Note, if |f| is
+% a curve with a periodic part with period |p| then |a*p| must be an positive
+% natural number.
+h = rtcaffine(f, 0.5, 3);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcinvert| operator is used to invert a curve f.
+h = rtcinvert(f);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcceil| and the |rtcfloor| operators are used to compute the point-wise 
+% ceil |h = rtcceil(f)| or floor |h = rtcfloor(f)| of a curve, respectively.
+h = rtcceil(f);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+h = rtcfloor(g);
+rtcplot(g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The operator |rtch| can be used to compute the maximum horizontal discance
+% between two curves |d = rtch(f, g)|. The maximum horizontal distance is
+% thereby defined as
+%
+% $$d = \sup_{\lambda \geq 0} \left \{\inf \{\tau \geq 0: \, f(\lambda) \leq g(\lambda +\tau)\}\right\}$$
+%
+
+%%
+% The operator |rtcv| can be used analogously to compute the maximum vertical 
+% discance between two curves |d = rtcv(f, g)|. The maximum vertical distance 
+% is thereby defined as
+%
+% $$d = \sup_{\lambda \geq 0} \{f(\lambda) - g(\lambda)\}$$
+%
+
+%% Comparisons
+% The Real-Time Calculus (RTC) Toolbox so far only defines the equality
+% comparison operator.
+
+%%
+% The |rtceq| function checks whether two curves are equal |rtceq(f, g)|.
+
+
+%% Complex Operations
+% The Real-Time Calculus (RTC) Toolbox defines a number of complex
+% operations on curves that are explained in the following.
+
+%%
+% The |rtcminconv| operator computes the min-plus-convolution of two curves |h
+% = rtcminconv(f, g)| that is defined as
+%
+% $$(f \otimes g)(\Delta) = \inf_{0 \leq \lambda \leq \Delta}\{f(\Delta - \lambda) + g(\lambda)\}$$
+%
+% The |rtcminconv| operator is also defined for a curve and a scalar.
+h = rtcminconv(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcmindeconv| operator computes the min-plus-deconvolution of two 
+% curves |h = rtcmindeconv(f, g)| that is defined as
+%
+% $$(f \oslash g)(\Delta) = \sup_{\lambda \geq 0}\{f(\Delta + \lambda) - g(\lambda)\}$$
+%
+% The |rtcmindeconv| operator is also defined for a curve and a scalar.
+h = rtcmindeconv(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcmaxconv| operator computes the max-plus-convolution of two curves |h
+% = rtcmaxconv(f, g)| that is defined as
+%
+% $$(f \; \overline{\otimes} \; g)(\Delta) = \sup_{0 \leq \lambda \leq \Delta}\{f(\Delta - \lambda) + g(\lambda)\}$$
+%
+% The |rtcmaxconv| operator is also defined for a curve and a scalar.
+h = rtcmaxconv(f, g);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% The |rtcmaxdeconv| operator computes the max-plus-deconvolution of two
+% curves |h = rtcmaxdeconv(g, f)| that is defined as
+%
+% $$(f \; \overline{\oslash} \; g)(\Delta) = \inf_{\lambda \geq 0}\{f(\Delta + \lambda) - g(\lambda)\}$$
+%
+% The |rtcmaxdeconv| operator is also defined for a curve and a scalar.
+h = rtcmaxdeconv(g, f);
+rtcplot(f, 'gREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%% Concatenation
+% The |rtcconcat| operator computes the concatenation of two
+% curves g and f as g(f).
+
+h = rtcconcat(g, f, 'lower');
+rtcplot(g, 'gREPLACE_WITH_DASH_DASH', f, 'bREPLACE_WITH_DASH_DASH', h, 'r', 20);
+
+%%
+% Note that the semantics of the concatenation depends on the evaluation
+% of a curve at a given place. If a curve is discontinuous, the evaluation
+% of an upper and a lower curve is different. Therefore, one needs to
+% specify whether the curves are |'upper'| or |'lower'| curves.
+
+
+%% Visualizations
+% The Real-Time Calculus (RTC) Toolbox defines a number of functions to 
+% visualize data about curves.
+
+%%
+% The function |rtcplotbounds| plots the upper and lower bounds of a curve.
+% Note, for a curve with a periodic part, the upper and lower bounds are
+% only defined after the start of the periodic part, while for a curve with
+% no periodic part, the last curve segment of the curve is treated as the
+% upper as well as the lower bound of the curve.
+rtcplot(f);
+rtcplotbounds(f);
+
+%%
+% The function |rtcploth| plots and computes the maximum horizontal distance 
+% between two curves |f| and |g|, that can also be computes as 
+% |d = rtch(f, g)|.
+rtcplot(f, 'rREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', 20);
+d = rtcploth(f, g)
+
+%%
+% The function |rtcplotv| plots and computes the maximum vertical distance 
+% between two curves |f| and |g|, that can also be computes as 
+% |d = rtcv(f, g)|.
+rtcplot(f, 'rREPLACE_WITH_DASH_DASH', g, 'bREPLACE_WITH_DASH_DASH', 20);
+d = rtcplotv(f, g)
+##### SOURCE END #####
+-->
+   </body>
+</html>

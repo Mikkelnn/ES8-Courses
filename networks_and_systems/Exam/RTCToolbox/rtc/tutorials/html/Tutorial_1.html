@@ -1,0 +1,319 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Part 1: Creating and Plotting Curves</title><meta name="generator" content="MATLAB 7.11"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2011-03-04"><meta name="DC.source" content="Tutorial_1.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h1>Part 1: Creating and Plotting Curves</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">"Hello World" Example</a></li><li><a href="#2">Creating Curves</a></li><li><a href="#16">Plotting Curves</a></li><li><a href="#25">Returning the y-coordinates of a Curve</a></li><li><a href="#31">Exporting Curves</a></li></ul></div><h2>"Hello World" Example<a name="1"></a></h2><p>As a first example, we create two curves <tt>f</tt> and <tt>g</tt>, compute their sum <tt>h = f + g</tt>, and we plot all three curves in different colors.</p><pre class="codeinput">f = rtccurve([[0 1 1];[8 9 0.25]]);
+g = rtccurve([[0 1 0];[1 2 0]], 0, 5, 2);
+h = rtcplus(f, g);
+rtcplot(f, <span class="string">'r'</span>, g, <span class="string">'b'</span>, h, <span class="string">'g'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_01.png" alt=""> <h2>Creating Curves<a name="2"></a></h2><p>In the RTC Toolbox, the <tt>rtccurve</tt> function is used to generate arbitrary curves. The RTC Toolbox also provides a number of specialized functions that can be used to easily create instances of some very common curve types, but these will be explained later.</p><p>A curve is defined over the complete positive x-axis <tt>x &gt;= 0</tt>, and consists of a list of so-called curve segments. Every curve segment is specified by its starting point coordinates <tt>(x,y)</tt> and its slope <tt>s</tt>. In Matlab, a single curve segment is represented by an array of doubles <tt>[x y s]</tt>, and a list of curve segments is represented by a matrix of doubles <tt>[[x1 y1 s1];[x2 y2 s2];[x3 y3 s3]]</tt>.</p><p>The simplest example of a curve consists only of a single curve segment.</p><pre class="codeinput">f = rtccurve([[0 0 1]]);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_02.png" alt=""> <p>If a curve consists of more than one curve segment, then the range of every curve segment is defined between its start point and the start point of the next curve segment. Note, that the first segment of a curve must always start at <tt>x = 0</tt>.</p><pre class="codeinput">f = rtccurve([[0 0 1];[2 2 0.25]]);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_03.png" alt=""> <p>If the end point of a curve segment does not coincide with the start point of the next curve segment, then the curve exhibits a discontinuity at this point. The RTC Toolbox does not define whether a discontinuity is treated as left- or right-continuous. However, the various functions of the RTC Toolbox will interpret a discontinuity correctly as either left- or right-continuous depending on the context of the curve.</p><pre class="codeinput">f = rtccurve([[0 0 1];[2 3 0.25]]);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_04.png" alt=""> <p>A curve may also exhibit a discontinuity at <tt>x = 0</tt>. Note however, that such a curve is interpreted by the RTC Toolbox to have the value <tt>0</tt> for <tt>x = 0</tt>, and a value not equal <tt>0</tt> for <tt>x &gt; 0</tt>.</p><pre class="codeinput">f = rtccurve([[0 1 1];[2 3 0.25]]);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_05.png" alt=""> <p>It is also possible to create curves that consist of an infinite number of curve segments. For this, a finite length list of curve segments is repeated periodically. In the context of the RTC Toolbox, this periodically repeated finite length list of curve segments is called the periodic part of a curve.</p><p>The following command creates a curve with a periodic part that is repeated with a period of <tt>p = 5</tt>.</p><pre class="codeinput">f = rtccurve([[0 0 1];[2 2 0.25]], 5);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_06.png" alt=""> <p>The periodic part does not need to start at <tt>y = 0</tt>. The following command creates a curve with a periodic part that starts at <tt>y = 10</tt> and that is repeated with a period of <tt>p = 5</tt>. Note that the period p needs to be an integer!</p><pre class="codeinput">f = rtccurve([[0 0 1];[2 2 0.25]], 10, 5);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_07.png" alt=""> <p>Furthermore, the offset on the y-axis between two successive repetitions of the periodic part can be stated explicitly. The following command creates a curve with a periodic part that starts at <tt>y = 10</tt> and that is repeated with a period of <tt>p = 5</tt> and an offset of <tt>o = 4</tt>.</p><pre class="codeinput">f = rtccurve([[0 0 1];[2 2 0.25]], 10, 5, 4);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_08.png" alt=""> <p>Finally, a curve that consists of an infinite number of curve segments can also be defined by a finite length list of curve segments that defines an arbitrary long start sequence of the curve, and a periodically repeated periodic part that defines the curve after this start sequence. In the context of the RTC Toolbox, the finite length list of curve segments that defines the start sequence of a curve is called the aperiodic part of the curve.</p><p>The following command creates a curve with an aperiodic part <tt>as = [[0 2 2]]</tt> that consists of a single curve segment, and a periodic part <tt>ps = [[0 0 1];[2 2 0.25]]</tt> that consists of two curve segments. The periodic part of the curves starts at <tt>x = 3</tt> and <tt>y = 10</tt>, and has a period <tt>p = 5</tt> and an offset <tt>o = 4</tt>. Again note, that periods need to be integer.</p><pre class="codeinput">f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5, 4);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_09.png" alt=""> <p>If the offset between two successive repetitions of the periodic part is not stated explicitly, it is automatically set such that a new repetition of the periodic part starts at the end point of the previous repetition.</p><pre class="codeinput">f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_10.png" alt=""> <p>Finally, if the y-value of the start point for the periodi part is not stated explicity, it is automatically set such that the first periodic part starts at the end point of the aperiodic part.</p><pre class="codeinput">f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 5);
+rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_11.png" alt=""> <h2>Plotting Curves<a name="16"></a></h2><p>The <tt>rtcplot</tt> function can be used to visualize curves in the RTC Toolbox.</p><p>Let us first create two curves <tt>f</tt> and <tt>g</tt></p><pre class="codeinput">f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 5);
+g = rtccurve([[0 0 0];[5 0 1];[10 5 2]]);
+</pre><p>The following command plots <tt>f</tt> in a range <tt>0 &lt;= x &lt;= 20</tt></p><pre class="codeinput">rtcplot(f, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_12.png" alt=""> <p>The plot range can easily be specified and can be chosen arbitrarily. Note however, that a curve is not defined for <tt>x &lt; 0</tt> and therefore the plot range must be a positive number.</p><pre class="codeinput">rtcplot(f, 200);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_13.png" alt=""> <p>The plot range can also be specified detailed by providing a range on both the x- and the y-axis. The following command plots <tt>f</tt> in a range <tt>10 &lt;= x &lt;= 20</tt> and <tt>12 &lt;= y &lt;= 22</tt></p><pre class="codeinput">rtcplot(f, [10 20 12 22]);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_14.png" alt=""> <p>Various line types, plot symbols and colors may be specified to plot a curve by providing a character string as used in the native MATLAB <tt>plot</tt> command. For example the following command plots <tt>f</tt> with a red dotted line.</p><pre class="codeinput">rtcplot(f, <span class="string">'r:'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_15.png" alt=""> <p>It is also possible to plot more than one curve in the same graph.</p><pre class="codeinput">rtcplot(f, g, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_16.png" alt=""> <p>By providing a seperate specification string after every curve, it is possible to use a different line style for every curve in a graph. For example the following command plots <tt>f</tt> with a red dotted line and <tt>g</tt> with a green dashed line.</p><pre class="codeinput">rtcplot(f, <span class="string">'r:'</span>, g, <span class="string">'g--'</span>, 20);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_17.png" alt=""> <p>Finally, the various plot parameters can be followed by parameter/value pairs to specify additional properties of the lines, as used in the native MATLAB <tt>plot</tt> command. The following command plots the curves <tt>f</tt> and <tt>g</tt> as in the previous example but with a line width of 3.</p><pre class="codeinput">rtcplot(f, <span class="string">'r:'</span>, g, <span class="string">'g--'</span>, 20, <span class="string">'LineWidth'</span>, 3);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_18.png" alt=""> <h2>Returning the y-coordinates of a Curve<a name="25"></a></h2><p>Let us first create a curve <tt>f</tt>.</p><pre class="codeinput">f = rtccurve([[0 1 0];[1 2 0]], 0, 5, 2);
+rtcplot(f,<span class="string">'b'</span>,10);
+</pre><img vspace="5" hspace="5" src="Tutorial_1_19.png" alt=""> <p>The y-coordinate of a curve <tt>f</tt> at any x-coordinate can be obtained by using the function <tt>y = rtcvalue(f,x,dir)</tt>. The input parameter <tt>dir</tt> can make a difference when <tt>x</tt> is a point of discontinuity on the curve. If <tt>dir &gt;= 0</tt> then <tt>y = f(x+epsilon)</tt>, otherwise <tt>y = f(x-epsilon)</tt>. The following command will return the value of the curve <tt>f</tt> at <tt>x=5+epsilon</tt>.</p><pre class="codeinput">y = rtcvalue(f,5,1);
+</pre><pre class="codeinput">disp([<span class="string">'y = '</span>, num2str(y)]);
+</pre><pre class="codeoutput">y = 3
+</pre><p>However, the <tt>y</tt> value is different when taken at <tt>5-epsilon</tt> because <tt>x=5</tt> is a point of discontinuity for curve <tt>f</tt>:</p><pre class="codeinput">y = rtcvalue(f,5,-1);
+</pre><pre class="codeinput">disp([<span class="string">'y = '</span>, num2str(y)]);
+</pre><pre class="codeoutput">y = 2
+</pre><p>Such differences are important when one considers left-continuous and right-continuous curves. For a detailed explanation see: Jean-Yves Le Boudec and Patrick Thiran. Network calculus: a theory of deterministic queuing systems for the internet, volume 2050 of LNCS. Springer-Verlag, 2001.</p><h2>Exporting Curves<a name="31"></a></h2><p>The <tt>export</tt> function can be used to export curves into a text file for later use. This function generates a string that, when executed in Matlab, is function call that will create a copy of the exported curve.</p><pre class="codeinput">rtcexport(f)
+</pre><pre class="codeoutput">
+ans =
+
+rtccurve([[0.0 0.0 0.0];[1.0 1.0 0.0]], 1.0, 5, 2.0)
+
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.11<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Part 1: Creating and Plotting Curves
+
+
+%% "Hello World" Example
+% As a first example, we create two curves |f| and |g|, compute their 
+% sum |h = f + g|, and we plot all three curves in different colors.
+f = rtccurve([[0 1 1];[8 9 0.25]]);
+g = rtccurve([[0 1 0];[1 2 0]], 0, 5, 2);
+h = rtcplus(f, g);
+rtcplot(f, 'r', g, 'b', h, 'g', 20);
+
+
+%% Creating Curves
+% In the RTC Toolbox, the |rtccurve| function is used to generate
+% arbitrary curves. The RTC Toolbox also provides a number of specialized 
+% functions that can be used to easily create instances of some very
+% common curve types, but these will be explained later.
+
+%%
+% A curve is defined over the complete positive x-axis |x >= 0|, 
+% and consists of a list of so-called curve segments. Every curve
+% segment is specified by its starting point coordinates |(x,y)| and its
+% slope |s|. In Matlab, a single curve segment is represented by an array 
+% of doubles |[x y s]|, and a list of curve segments is represented by a
+% matrix of doubles |[[x1 y1 s1];[x2 y2 s2];[x3 y3 s3]]|. 
+
+%%
+% The simplest example of a curve consists only of a single curve segment.
+f = rtccurve([[0 0 1]]);
+rtcplot(f, 20);
+
+%%
+% If a curve consists of more than one curve segment, then the range of 
+% every curve segment is defined between its start point and the start
+% point of the next curve segment. Note, that the first segment of a curve
+% must always start at |x = 0|.
+f = rtccurve([[0 0 1];[2 2 0.25]]);
+rtcplot(f, 20);
+
+%%
+% If the end point of a curve segment does not coincide with the start
+% point of the next curve segment, then the curve exhibits a discontinuity 
+% at this point. The RTC Toolbox does not define whether a discontinuity is
+% treated as left- or right-continuous. However, the various functions of 
+% the RTC Toolbox will interpret a discontinuity correctly as either left- 
+% or right-continuous depending on the context of the curve.
+f = rtccurve([[0 0 1];[2 3 0.25]]);
+rtcplot(f, 20);
+
+%%
+% A curve may also exhibit a discontinuity at |x = 0|. Note however, that
+% such a curve is interpreted by the RTC Toolbox to have the value |0| for
+% |x = 0|, and a value not equal |0| for |x > 0|.
+f = rtccurve([[0 1 1];[2 3 0.25]]);
+rtcplot(f, 20);
+
+%%
+% It is also possible to create curves that consist of an infinite number
+% of curve segments. For this, a finite length list of curve segments is
+% repeated periodically. In the context of the RTC Toolbox, this
+% periodically repeated finite length list of curve segments is called the
+% periodic part of a curve.
+
+%%
+% The following command creates a curve with a periodic part that is 
+% repeated with a period of |p = 5|.
+f = rtccurve([[0 0 1];[2 2 0.25]], 5);
+rtcplot(f, 20);
+
+%%
+% The periodic part does not need to start at |y = 0|. The following
+% command creates a curve with a periodic part that starts at |y = 10| and
+% that is repeated with a period of |p = 5|. Note that the period p needs
+% to be an integer!
+f = rtccurve([[0 0 1];[2 2 0.25]], 10, 5);
+rtcplot(f, 20);
+
+%%
+% Furthermore, the offset on the y-axis between two successive repetitions 
+% of the periodic part can be stated explicitly. The following command
+% creates a curve with a periodic part that starts at |y = 10| and
+% that is repeated with a period of |p = 5| and an offset of |o = 4|.
+f = rtccurve([[0 0 1];[2 2 0.25]], 10, 5, 4);
+rtcplot(f, 20);
+
+%%
+% Finally, a curve that consists of an infinite number of curve segments
+% can also be defined by a finite length list of curve segments that
+% defines an arbitrary long start sequence of the curve, and a periodically
+% repeated periodic part that defines the curve after this start sequence. 
+% In the context of the RTC Toolbox, the finite length list of curve 
+% segments that defines the start sequence of a curve is called the 
+% aperiodic part of the curve.
+
+%%
+% The following command creates a curve with an aperiodic part |as = [[0 2
+% 2]]| that consists of a single curve segment, and a periodic part |ps = 
+% [[0 0 1];[2 2 0.25]]| that consists of two curve segments. The periodic
+% part of the curves starts at |x = 3| and |y = 10|, and has a period |p =
+% 5| and an offset |o = 4|. Again note, that periods need to be integer.
+f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5, 4);
+rtcplot(f, 20);
+
+%%
+% If the offset between two successive repetitions of the periodic part is 
+% not stated explicitly, it is automatically set such that a new repetition
+% of the periodic part starts at the end point of the previous repetition.
+f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 10, 5);
+rtcplot(f, 20);
+
+%%
+% Finally, if the y-value of the start point for the periodi part is not
+% stated explicity, it is automatically set such that the first periodic 
+% part starts at the end point of the aperiodic part.
+f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 5);
+rtcplot(f, 20);
+
+
+%% Plotting Curves
+% The |rtcplot| function can be used to visualize curves in the RTC
+% Toolbox.
+
+%% 
+% Let us first create two curves |f| and |g|
+f = rtccurve([[0 2 2]], [[0 0 1];[2 2 0.25]], 3, 5);
+g = rtccurve([[0 0 0];[5 0 1];[10 5 2]]);
+
+%%
+% The following command plots |f| in a range |0 <= x <= 20|
+rtcplot(f, 20);
+
+%%
+% The plot range can easily be specified and can be chosen arbitrarily.
+% Note however, that a curve is not defined for |x < 0| and therefore the 
+% plot range must be a positive number.
+rtcplot(f, 200);
+
+%%
+% The plot range can also be specified detailed by providing a range on
+% both the x- and the y-axis. The following command plots |f| in a range 
+% |10 <= x <= 20| and |12 <= y <= 22|
+rtcplot(f, [10 20 12 22]);
+
+%%
+% Various line types, plot symbols and colors may be specified to plot a
+% curve by providing a character string as used in the native MATLAB |plot|
+% command. For example the following command plots |f| with a red dotted
+% line.
+rtcplot(f, 'r:', 20);
+
+%%
+% It is also possible to plot more than one curve in the same graph.
+rtcplot(f, g, 20);
+
+%%
+% By providing a seperate specification string after every curve, it is
+% possible to use a different line style for every curve in a graph. For
+% example the following command plots |f| with a red dotted line and |g|
+% with a green dashed line.
+rtcplot(f, 'r:', g, 'gREPLACE_WITH_DASH_DASH', 20);
+
+%%
+% Finally, the various plot parameters can be followed by parameter/value
+% pairs to specify additional properties of the lines, as used in the
+% native MATLAB |plot| command. The following command plots the curves |f|
+% and |g| as in the previous example but with a line width of 3.
+rtcplot(f, 'r:', g, 'gREPLACE_WITH_DASH_DASH', 20, 'LineWidth', 3);
+
+
+%% Returning the y-coordinates of a Curve
+% Let us first create a curve |f|.
+f = rtccurve([[0 1 0];[1 2 0]], 0, 5, 2);
+rtcplot(f,'b',10);
+
+%%
+% The y-coordinate of a curve |f| at any x-coordinate can be obtained by using
+% the function |y = rtcvalue(f,x,dir)|. The input parameter |dir| can make
+% a difference when |x| is a point of discontinuity on the curve. If |dir
+% >= 0| then |y = f(x+epsilon)|, otherwise |y = f(x-epsilon)|. The
+% following command will return the value of the curve |f| at
+% |x=5+epsilon|.
+y = rtcvalue(f,5,1);
+%%
+disp(['y = ', num2str(y)]);
+%%
+% However, the |y| value is different when taken at |5-epsilon| because
+% |x=5| is a point of discontinuity for curve |f|:
+y = rtcvalue(f,5,-1);
+%%
+disp(['y = ', num2str(y)]);
+
+%%
+% Such differences are important when one considers left-continuous and
+% right-continuous curves. For a detailed explanation see: Jean-Yves Le 
+% Boudec and Patrick Thiran. Network calculus: a theory of deterministic 
+% queuing systems for the internet, volume 2050 of LNCS. Springer-Verlag, 2001.
+
+
+%% Exporting Curves
+% The |export| function can be used to export curves into a text file for
+% later use. This function generates a string that, when executed in
+% Matlab, is function call that will create a copy of the exported curve.
+rtcexport(f)
+##### SOURCE END #####
+--></body></html>

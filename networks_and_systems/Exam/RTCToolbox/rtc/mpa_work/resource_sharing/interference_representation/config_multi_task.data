@@ -1,0 +1,24 @@
+%Number of tasks
+%time wheel, the first task starts at time 0, the first number here shows the start time of the second task
+%the last number in this vector corresponds to the period of the time wheel
+%the number of super-blocks in each task
+%for each task 4 lines, representing the following data in that order:
+	%the min computational time needed for each super-block
+	%
+	%the max computational time needed for each super-block
+	%
+	%the min amount of cache-misses that can happen for each super block
+	%
+	%the max amount of cache-misses that can happen for each super block
+	%
+2
+22 12
+2 1
+3 2
+5 3
+1 1
+2 2
+4 
+7
+1
+2

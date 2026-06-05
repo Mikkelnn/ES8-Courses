@@ -1,0 +1,32 @@
+Real-Time Calculus (RTC) Toolbox
+
+Installation Guide
+==================
+
+Steps to install the Real-Time Calculus (RTC) Toolbox:
+------------------------------------------------------
+   1. Extract the downloaded zip package. The extracted directory will 
+      contain a directory called rtc.
+
+   2. Copy or move the directory rtc to its final installation destination, 
+      e.g. to $MATLAB$/toolbox/rtc
+
+   3. Open Matlab and change to the rtc directory:
+      >> cd $MATLAB$/toolbox/rtc
+
+   4. Run:
+      >> rtc_install
+
+   5. Start using the RTC Toolbox. To explore the functionality of the 
+      RTC Toolbox, try the following:
+      >> help rtc
+
+   6. In case of any problems feel free to send an e-mail to rtc@tik.ee.ethz.ch.
+
+
+Steps to uninstall the Real-Time Calculus (RTC) Toolbox:
+--------------------------------------------------------
+   1. Run:
+      >> rtc_uninstall
+
+   2. You may now delete the directory $MATLAB$/toolbox/rtc
