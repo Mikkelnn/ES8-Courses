@@ -36,3 +36,7 @@ c. Run
 
 
 For questions and bug reports, please contact truetime@control.lth.se
+
+For this to work, be in the same folder as this readme
+
+Also right click the kernel folder, go to add to path, add all folders and subfolders to path
